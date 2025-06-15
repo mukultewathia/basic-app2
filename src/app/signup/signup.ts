@@ -15,7 +15,7 @@ import { of }               from 'rxjs';
 })
 export class Signup {
   message: string | null = null;
-  private readonly apiUrl = 'http://localhost:8080/signup';
+  private readonly apiUrl = 'https://basic-app2-backend.onrender.com';
 
   constructor(private http: HttpClient) {}
 
