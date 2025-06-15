@@ -14,7 +14,7 @@ import { of }              from 'rxjs';
 })
 export class LoginComponent {
   message: string | null = null;
-  private readonly apiUrl = 'https://basic-app2-backend.onrender.com';
+  private readonly apiUrl = 'https://basic-app2-backend.onrender.com/login';
 
   constructor(private http: HttpClient) {}
 

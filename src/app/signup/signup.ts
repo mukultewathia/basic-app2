@@ -15,7 +15,7 @@ import { of }               from 'rxjs';
 })
 export class Signup {
   message: string | null = null;
-  private readonly apiUrl = 'https://basic-app2-backend.onrender.com';
+  private readonly apiUrl = 'https://basic-app2-backend.onrender.com/signup';
 
   constructor(private http: HttpClient) {}
 
