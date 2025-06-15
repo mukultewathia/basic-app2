@@ -1,0 +1,60 @@
+// app.component.scss
+
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #007acc;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  font-family: sans-serif;
+
+  a {
+    color: #ffffff;
+    text-decoration: none;
+    margin: 0 0.75rem;
+    position: relative;
+    padding: 0.25rem 0;
+
+    &.active {
+      font-weight: 600;
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -0.25rem;
+        height: 2px;
+        background: #ffdd57;
+        border-radius: 2px;
+      }
+    }
+
+    &:hover {
+      color: #ffdd57;
+    }
+  }
+
+  // Separator styling (the "|" characters)
+  // Optionally hide on mobile
+  &::before,
+  &::after {
+    content: '';
+  }
+
+//   If you want custom separators instead of literal "|",
+//   remove the "|" from your template and use this:
+//   a + a::before {
+//     content: '|';
+//     color: rgba(255,255,255,0.6);
+//     margin-right: 0.75rem;
+//     margin-left: 0.75rem;
+//   }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    a {
+      margin: 0.5rem 0;
+    }
+  }
+}
