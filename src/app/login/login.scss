@@ -105,3 +105,44 @@
     }
   }
 }
+
+.user-list-container {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  max-width: 500px;
+}
+
+.user-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-item {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+  transition: background-color 0.3s ease;
+}
+
+.user-item:hover {
+  background-color: #e6f7ff;
+}
+
+.user-icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.username {
+  font-weight: 500;
+  font-size: 16px;
+}
