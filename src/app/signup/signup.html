@@ -1,3 +1,7 @@
+<div class="page-header">
+  <h1>Signup to start capturing your metrics</h1>
+</div>
+
 <div class="signup-container">
   <h2>Create a new account</h2>
   <form #f="ngForm" (ngSubmit)="onSubmit(f)">
@@ -23,5 +27,5 @@
     </div>
     <button type="submit" [disabled]="!f.valid">Sign Up</button>
   </form>
-  <p *ngIf="message">{{ message }}</p>
+  <p *ngIf="message" [class]="isError ? 'error-message' : 'message'">{{ message }}</p>
 </div>

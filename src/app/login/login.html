@@ -1,3 +1,7 @@
+<div class="page-header">
+  <h1>Login to see your metrics</h1>
+</div>
+
 <div class="login-container"  *ngIf="!loggedIn">
   <h2> Login</h2>
   <form (ngSubmit)="onSubmit(f)" #f="ngForm">
@@ -34,7 +38,7 @@
     </button>
   </form>
 
-  <p *ngIf="message" class="message">{{ message }}</p>
+  <p *ngIf="message" [class]="isError ? 'error-message' : 'message'">{{ message }}</p>
 </div>
 
 <div *ngIf="users.length" class="user-list-container">

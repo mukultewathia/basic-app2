@@ -1,0 +1,64 @@
+<!-- Weight Tracking Chart Component -->
+<div class="weight-container">
+  <div class="title-section">
+    <h1 class="main-title">Weight Tracking</h1>
+    <p class="subtitle">Monitor your weight progress over time</p>
+    <p class="username-display">Welcome, {{ appDataService.username }}!</p>
+  </div>
+  
+  <div class="chart-card">
+    <canvas #chartCanvas
+            baseChart
+            [data]="data"
+            [options]="options"
+            [type]="chartType">
+    </canvas>
+  </div>
+
+  <!-- Add Weight Button -->
+  <button class="add-weight-btn" (click)="openWeightModal()">
+    <span class="btn-icon">+</span>
+    Add Weight Entry
+  </button>
+</div>
+
+<!-- Weight Entry Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeWeightModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Weight Entry</h3>
+      <button class="close-btn" (click)="closeWeightModal()">×</button>
+    </div>
+    
+    <form (ngSubmit)="submitWeight(weightForm)" #weightForm="ngForm">
+      <div class="form-group">
+        <label for="weight">Weight (kg)</label>
+        <input
+          id="weight"
+          name="weight"
+          type="number"
+          step="0.1"
+          min="0"
+          max="500"
+          ngModel
+          required
+          placeholder="Enter weight in kg"
+          class="form-control"
+        />
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="closeWeightModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="!weightForm.valid || isSubmitting">
+          {{ isSubmitting ? 'Adding...' : 'Add Weight' }}
+        </button>
+      </div>
+    </form>
+
+    <p *ngIf="modalMessage" [class]="isModalError ? 'error-message' : 'success-message'">
+      {{ modalMessage }}
+    </p>
+  </div>
+</div>

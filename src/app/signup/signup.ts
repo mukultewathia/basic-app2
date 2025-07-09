@@ -15,7 +15,9 @@ import { of }               from 'rxjs';
 })
 export class Signup {
   message: string | null = null;
-  private readonly apiUrl = 'https://basic-app2-backend.onrender.com/signup';
+  isError: boolean = false;
+//   private readonly apiUrl = 'https://basic-app2-backend.onrender.com/signup';
+  private readonly apiUrl = 'http://localhost:8080/signup';
 
   constructor(private http: HttpClient) {}
 
@@ -25,20 +27,27 @@ export class Signup {
         password: form.value.password
       };
 
+      // Reset message state
+      this.message = null;
+      this.isError = false;
+
       this.http
       .post(this.apiUrl, payload, { responseType: 'text' })
       .pipe(
         catchError(err => {
           console.error('Signup error', err);
-          this.message = 'Signup failed. Is the backend running?';
+          this.message = 'Signup failed. Please try again.';
+          this.isError = true;
           return of('');       // emit an empty string so subscribe still fires
         })
       )
       .subscribe(responseText => {
-        if (responseText) {
-          this.message = responseText;
+        if (responseText && responseText.includes('success')) {
+          this.message = 'Signup successful! Please log in.';
+          this.isError = false;
         } else {
-          this.message = this.message || 'Signup failed.';
+          this.message = this.message || 'Signup failed. Please try again.';
+          this.isError = true;
         }
       });
 

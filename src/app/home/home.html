@@ -1,4 +1,11 @@
-<div class="home ">
+<div class="home">
   <h2>Welcome Home!</h2>
-  <button routerLink="/login" class="btn">Go to Login</button>
+  <div *ngIf="appDataService.username">
+    <p>Welcome, {{ appDataService.username }}!</p>
+    <button (click)="logout()" class="btn">Logout</button>
+  </div>
+  <div *ngIf="!appDataService.username">
+    <p>Please log in to continue.</p>
+    <button routerLink="/login" class="btn">Go to Login</button>
+  </div>
 </div>
