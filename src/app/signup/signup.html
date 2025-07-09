@@ -13,6 +13,8 @@
         required
         type="text"
         placeholder="Choose a username"
+        (input)="onUsernameInput($event)"
+        (keypress)="onKeyPress($event)"
       />
     </div>
     <div class="form-group">
@@ -23,6 +25,8 @@
         required
         type="password"
         placeholder="Choose a password"
+        (input)="onPasswordInput($event)"
+        (keypress)="onKeyPress($event)"
       />
     </div>
     <button type="submit" [disabled]="!f.valid">Sign Up</button>

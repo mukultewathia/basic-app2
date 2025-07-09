@@ -18,6 +18,31 @@ export class Signup {
   message: string | null = null;
   isError: boolean = false;
 
+  // Validation function for username and password
+  validateInput(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  // Handle input validation for username
+  onUsernameInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    target.value = this.validateInput(target.value);
+  }
+
+  // Handle input validation for password
+  onPasswordInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    target.value = this.validateInput(target.value);
+  }
+
+  // Prevent invalid characters on keypress
+  onKeyPress(event: KeyboardEvent): void {
+    const key = event.key;
+    if (!key.match(/[a-z0-9]/i)) {
+      event.preventDefault();
+    }
+  }
+
   constructor(private http: HttpClient) {}
 
    onSubmit(form: { value: { username: string; password: string } }) {

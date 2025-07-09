@@ -14,6 +14,8 @@
         required
         placeholder="Enter username"
         class="form-control"
+        (input)="onUsernameInput($event)"
+        (keypress)="onKeyPress($event)"
       />
     </div>
     <div class="form-group">
@@ -26,6 +28,8 @@
         required
         placeholder="Enter password"
         class="form-control"
+        (input)="onPasswordInput($event)"
+        (keypress)="onKeyPress($event)"
       />
     </div>
 
