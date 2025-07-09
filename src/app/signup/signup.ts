@@ -4,6 +4,7 @@ import { CommonModule }       from '@angular/common';
 import { HttpClient }       from '@angular/common/http';
 import { catchError }       from 'rxjs/operators';
 import { of }               from 'rxjs';
+import { API_URLS } from '../config/api.config';
 
 
 @Component({
@@ -16,8 +17,6 @@ import { of }               from 'rxjs';
 export class Signup {
   message: string | null = null;
   isError: boolean = false;
-//   private readonly apiUrl = 'https://basic-app2-backend.onrender.com/signup';
-  private readonly apiUrl = 'http://localhost:8080/signup';
 
   constructor(private http: HttpClient) {}
 
@@ -32,7 +31,7 @@ export class Signup {
       this.isError = false;
 
       this.http
-      .post(this.apiUrl, payload, { responseType: 'text' })
+      .post(API_URLS.SIGNUP, payload, { responseType: 'text' })
       .pipe(
         catchError(err => {
           console.error('Signup error', err);

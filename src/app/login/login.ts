@@ -6,6 +6,7 @@ import { HttpClient }      from '@angular/common/http';
 import { catchError }      from 'rxjs/operators';
 import { lastValueFrom, of }              from 'rxjs';
 import { Router } from '@angular/router';
+import { API_URLS } from '../config/api.config';
 
 interface User {
   username: string;
@@ -23,10 +24,6 @@ interface User {
 export class LoginComponent {
   message: string | null = null;
   isError: boolean = false;
-  // private readonly apiUrl = 'https://basic-app2-backend.onrender.com/login';
-  //   private readonly allUsersUrl = 'https://basic-app2-backend.onrender.com/allUsers';
-  private readonly apiUrl = 'http://localhost:8080/login';
-  private readonly allUsersUrl = 'http://localhost:8080/allUsers';
   users: User[] = [];
   loggedIn: boolean = false;
 
@@ -48,7 +45,7 @@ export class LoginComponent {
     this.isError = false;
 
     this.http
-      .post(this.apiUrl,{ username, password } )
+      .post(API_URLS.LOGIN,{ username, password } )
       .pipe(
         catchError(err => {
           console.error('Login error', err);
@@ -74,7 +71,7 @@ export class LoginComponent {
 
   async loadUsers(): Promise<void> {
    try {
-    const data = await lastValueFrom(this.http.get<User[]>(this.allUsersUrl));
+    const data = await lastValueFrom(this.http.get<User[]>(API_URLS.ALL_USERS));
     this.users = data;
   } catch (err) {
     console.error('Failed to load users', err);

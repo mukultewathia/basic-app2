@@ -5,7 +5,7 @@ import {Signup} from './signup/signup';
 import { WeightComponent } from './weight/weight';
 
 export const appRoutes: Routes = [
-  { path: '',      redirectTo: '/home', pathMatch: 'full' },
+  { path: '',      redirectTo: '/login', pathMatch: 'full' },
   { path: 'home',  component: HomeComponent },
   { path: 'signup',  component: Signup },
   { path: 'login', component: LoginComponent },

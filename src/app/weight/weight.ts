@@ -12,6 +12,7 @@ import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import 'chartjs-adapter-date-fns';
+import { API_URLS } from '../config/api.config';
 
 // Register Chart.js components and the zoom plugin.
 // This is required for chart functionality and zoom support.
@@ -124,7 +125,7 @@ export class WeightComponent implements OnInit {
       weightKg: weightKg
     };
 
-    this.http.post('http://localhost:8080/api/weights/addWeight', payload)
+    this.http.post(API_URLS.ADD_WEIGHT, payload)
       .pipe(
         catchError(err => {
           console.error('Error adding weight:', err);
