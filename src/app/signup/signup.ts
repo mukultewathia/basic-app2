@@ -4,6 +4,8 @@ import { CommonModule }       from '@angular/common';
 import { HttpClient }       from '@angular/common/http';
 import { catchError }       from 'rxjs/operators';
 import { of }               from 'rxjs';
+import { Router } from '@angular/router';
+import { AppDataService } from '../app_service_data';
 import { API_URLS } from '../config/api.config';
 
 
@@ -43,7 +45,11 @@ export class Signup {
     }
   }
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private appDataService: AppDataService
+  ) {}
 
    onSubmit(form: { value: { username: string; password: string } }) {
       const payload = {
@@ -67,13 +73,44 @@ export class Signup {
       )
       .subscribe(responseText => {
         if (responseText && responseText.includes('created')) {
-          this.message = 'Signup successful! Please log in.';
+          this.message = 'Signup successful! Logging you in...';
           this.isError = false;
+          
+          // Automatically log in the user after successful signup
+          this.autoLogin(form.value.username, form.value.password);
         } else {
           this.message = this.message || 'Signup failed. Please try again.';
           this.isError = true;
         }
       });
 
+    }
+
+    private autoLogin(username: string, password: string): void {
+      const loginPayload = {
+        username: username,
+        password: password
+      };
+
+      this.http
+        .post(API_URLS.LOGIN, loginPayload, { responseType: 'text' })
+        .pipe(
+          catchError(err => {
+            console.error('Auto-login error', err);
+            this.message = 'Signup successful but auto-login failed. Please log in manually.';
+            this.isError = false;
+            return of('');
+          })
+        )
+        .subscribe(responseText => {
+          if (responseText) {
+            // Set user data and redirect to weight page
+            this.appDataService.setUser(username);
+            this.router.navigate(['/metrics-app/weight']);
+          } else {
+            this.message = 'Signup successful but auto-login failed. Please log in manually.';
+            this.isError = false;
+          }
+        });
     }
 }

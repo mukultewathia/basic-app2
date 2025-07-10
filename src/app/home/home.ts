@@ -19,6 +19,6 @@ export class HomeComponent {
 
   logout(): void {
     this.appDataService.reset();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/metrics-app/login']);
   }
 }

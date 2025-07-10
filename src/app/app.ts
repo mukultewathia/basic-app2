@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, ActivatedRoute } from '@angular/router';
 import { AppDataService } from './app_service_data';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -14,11 +14,16 @@ import { Router } from '@angular/router';
 export class AppComponent {
   constructor(
     public appDataService: AppDataService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
+
+  get isMafiaRoute(): boolean {
+    return this.router.url === '/mafia';
+  }
 
   logout(): void {
     this.appDataService.reset();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/metrics-app/login']);
   }
 }

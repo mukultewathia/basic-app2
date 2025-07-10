@@ -50,7 +50,7 @@ export class WeightComponent implements OnInit {
     
     if (!username) {
       console.warn('No username available, redirecting to login');
-      this.router.navigate(['/login']);
+      this.router.navigate(['/metrics-app/login']);
       return;
     }
 
@@ -67,7 +67,7 @@ export class WeightComponent implements OnInit {
         console.error('Error fetching weight data:', error);
         // Optionally redirect to login on API error if it's an auth error
         if (error.status === 401 || error.status === 403) {
-          this.router.navigate(['/login']);
+          this.router.navigate(['/metrics-app/login']);
         }
       }
     });
