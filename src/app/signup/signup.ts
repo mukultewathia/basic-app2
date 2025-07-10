@@ -66,7 +66,7 @@ export class Signup {
         })
       )
       .subscribe(responseText => {
-        if (responseText && responseText.includes('user created')) {
+        if (responseText && responseText.includes('created')) {
           this.message = 'Signup successful! Please log in.';
           this.isError = false;
         } else {
