@@ -28,11 +28,29 @@ Chart.register(...registerables, zoomPlugin);
 export class WeightComponent implements OnInit {
   readonly chartType = 'line';
 
+  // View toggle properties
+  isWeeklyView = false;
+  
   // Modal properties
   showModal = false;
   isSubmitting = false;
   modalMessage: string | null = null;
   isModalError = false;
+  
+  // Format today as YYYY-MM-DD in IST
+  private getTodayIST(): string {
+    const now = new Date();
+    // IST is UTC+5:30, so add 5.5 hours in ms
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(now.getTime() + istOffsetMs);
+    // Format as YYYY-MM-DD
+    const yyyy = istDate.getFullYear();
+    const mm = String(istDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(istDate.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  today: string = this.getTodayIST();
 
   constructor(
     public readonly appDataService: AppDataService,
@@ -57,14 +75,27 @@ export class WeightComponent implements OnInit {
     this.loadWeightData(username);
   }
 
-  private loadWeightData(username: string): void {
+  loadWeightData(username: string | null): void {
+    if (!username) {
+      console.warn('No username provided');
+      return;
+    }
+    
+    if (this.isWeeklyView) {
+      this.loadWeeklyData(username);
+    } else {
+      this.loadDailyData(username);
+    }
+  }
+
+  private loadDailyData(username: string): void {
     this.weightService.getAverageWeight$(username).subscribe({
       next: (weights) => {
-        console.log('Weight data received:', weights);
-        this.updateChartData(weights);
+        console.log('Daily weight data received:', weights);
+        this.updateDailyChartData(weights);
       },
       error: (error) => {
-        console.error('Error fetching weight data:', error);
+        console.error('Error fetching daily weight data:', error);
         // Optionally redirect to login on API error if it's an auth error
         if (error.status === 401 || error.status === 403) {
           this.router.navigate(['/metrics-app/login']);
@@ -73,8 +104,24 @@ export class WeightComponent implements OnInit {
     });
   }
 
-  private updateChartData(weights: any[]): void {
-    // Transform the weight data for the chart
+  private loadWeeklyData(username: string): void {
+    this.weightService.getWeeklyAverageWeight$(username).subscribe({
+      next: (weeklyWeights) => {
+        console.log('Weekly weight data received:', weeklyWeights);
+        this.updateWeeklyChartData(weeklyWeights);
+      },
+      error: (error) => {
+        console.error('Error fetching weekly weight data:', error);
+        // Optionally redirect to login on API error if it's an auth error
+        if (error.status === 401 || error.status === 403) {
+          this.router.navigate(['/metrics-app/login']);
+        }
+      }
+    });
+  }
+
+  private updateDailyChartData(weights: any[]): void {
+    // Transform the daily weight data for the chart
     const chartData = weights.map(weight => ({
       x: weight.date.getTime(), // Convert Date to timestamp
       y: weight.avgWeightKg
@@ -82,7 +129,7 @@ export class WeightComponent implements OnInit {
 
     this.data = {
       datasets: [{
-        label: 'Weight (kg)',
+        label: 'Daily Weight (kg)',
         data: chartData,
         borderColor: 'steelblue',
         backgroundColor: 'rgba(70,130,180,.25)',
@@ -90,6 +137,42 @@ export class WeightComponent implements OnInit {
         pointRadius: 3
       }]
     };
+  }
+
+  private updateWeeklyChartData(weeklyWeights: any[]): void {
+    // Transform the weekly weight data for the chart
+    const chartData = weeklyWeights.map(weight => ({
+      x: weight.weekStart.getTime(), // Convert Date to timestamp
+      y: weight.avgWeightKg
+    }));
+
+    this.data = {
+      datasets: [{
+        label: 'Weekly Average Weight (kg)',
+        data: chartData,
+        borderColor: 'darkgreen',
+        backgroundColor: 'rgba(0,100,0,.25)',
+        tension: 0.3,
+        pointRadius: 4
+      }]
+    };
+  }
+
+  // Toggle between daily and weekly views
+  switchToDailyView(): void {
+    this.isWeeklyView = false;
+    const username = this.appDataService.username;
+    if (username) {
+      this.loadWeightData(username);
+    }
+  }
+
+  switchToWeeklyView(): void {
+    this.isWeeklyView = true;
+    const username = this.appDataService.username;
+    if (username) {
+      this.loadWeightData(username);
+    }
   }
 
   // Modal methods
@@ -105,7 +188,7 @@ export class WeightComponent implements OnInit {
     this.isModalError = false;
   }
 
-  submitWeight(weightForm: { value: { weight: number } }): void {
+  submitWeight(weightForm: { value: { weight: number, date: string } }): void {
     const username = this.appDataService.username;
     if (!username) {
       this.modalMessage = 'User not authenticated';
@@ -113,8 +196,14 @@ export class WeightComponent implements OnInit {
       return;
     }
 
-    // Get the weight value from the form
+    // Get the weight and date values from the form
     const weightKg = weightForm.value.weight;
+    let date = weightForm.value.date || this.today;
+
+    // Convert date (YYYY-MM-DD) to ISO 8601 with time and timezone
+    // Set time to 00:00:00 in local timezone
+    const dateObj = new Date(date);
+    const isoDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), 0, 0, 0).toISOString();
 
     this.isSubmitting = true;
     this.modalMessage = null;
@@ -122,7 +211,8 @@ export class WeightComponent implements OnInit {
 
     const payload = {
       userName: username,
-      weightKg: weightKg
+      weightKg: weightKg,
+      date: isoDate
     };
 
     this.http.post(API_URLS.ADD_WEIGHT, payload)
@@ -154,32 +244,34 @@ export class WeightComponent implements OnInit {
     datasets: []
   };
 
-  options: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        type: 'time',
-        time: {
-          unit: 'day', // Changed to 'day' since we're dealing with daily averages
-          tooltipFormat: 'MMM d, yyyy'
+  get options(): ChartOptions<'line'> {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: this.isWeeklyView ? 'week' : 'day',
+            tooltipFormat: this.isWeeklyView ? 'MMM d, yyyy' : 'MMM d, yyyy'
+          },
+          title: { display: true, text: 'Date' }
         },
-        title: { display: true, text: 'Date' }
+        y: {
+          title: { display: true, text: 'Weight (kg)' }
+        }
       },
-      y: {
-        title: { display: true, text: 'Weight (kg)' }
-      }
-    },
-    /** pan = horizontal "scroll" */
-    plugins: {
-      zoom: {
-        pan: { enabled: true, mode: 'x' },
+      /** pan = horizontal "scroll" */
+      plugins: {
         zoom: {
-          wheel: { enabled: true },   // mouse-wheel
-          pinch: { enabled: true },   // touch pinch
-          mode: 'x'
+          pan: { enabled: true, mode: 'x' },
+          zoom: {
+            wheel: { enabled: true },   // mouse-wheel
+            pinch: { enabled: true },   // touch pinch
+            mode: 'x'
+          }
         }
       }
-    }
-  };
+    };
+  }
 }

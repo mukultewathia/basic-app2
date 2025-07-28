@@ -7,6 +7,8 @@ import { catchError }      from 'rxjs/operators';
 import { lastValueFrom, of }              from 'rxjs';
 import { Router } from '@angular/router';
 import { API_URLS } from '../config/api.config';
+import { environment } from '../../environments/environment';
+
 
 interface User {
   username: string;
@@ -54,6 +56,7 @@ export class LoginComponent {
 
   constructor(private readonly http: HttpClient, private readonly router: Router, private readonly appDataService: AppDataService) {
     console.log('login ctor');
+    console.log('environment url', environment.apiBaseUrl);
     this.appDataService.reset();
   }
 

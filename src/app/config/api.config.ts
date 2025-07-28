@@ -1,6 +1,8 @@
+import { environment } from '../../environments/environment';
+
 export const API_CONFIG = {
   // Base URL for the backend API
-  BASE_URL: 'https://basic-app2-backend.onrender.com',
+  BASE_URL: environment.apiBaseUrl,
   
   // Authentication endpoints
   LOGIN: '/login',
