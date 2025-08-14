@@ -1,5 +1,9 @@
 <nav class="navbar" *ngIf="appDataService.loggedIn && !isMafiaRoute">
-  <a routerLink="/metrics-app/weight" routerLinkActive="active">Weight Tracking</a>
+  <div class="nav-links">
+    <a routerLink="/metrics-app/home" routerLinkActive="active">Home</a>
+    <a routerLink="/metrics-app/weight" routerLinkActive="active">Weight Tracking</a>
+    <a routerLink="/metrics-app/habits" routerLinkActive="active">Habits</a>
+  </div>
   <button class="logout-btn" (click)="logout()">Logout</button>
 </nav>
 <nav class="navbar" *ngIf="!appDataService.loggedIn && !isMafiaRoute">

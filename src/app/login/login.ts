@@ -89,7 +89,7 @@ export class LoginComponent {
           this.loggedIn = true;
           await this.loadUsers();
           this.updateAfterLogin(username);
-          this.router.navigate(['/metrics-app/weight']);
+          this.router.navigate(['/metrics-app/home']);
         } else {
           this.message = 'Login failed. Please try again.';
           this.isError = true;

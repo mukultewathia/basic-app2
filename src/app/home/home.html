@@ -1,11 +1,50 @@
 <div class="home">
-  <h2>Welcome Home!</h2>
-  <div *ngIf="appDataService.username">
-    <p>Welcome, {{ appDataService.username }}!</p>
-    <button (click)="logout()" class="btn">Logout</button>
-  </div>
-  <div *ngIf="!appDataService.username">
-    <p>Please log in to continue.</p>
-    <button routerLink="/metrics-app/login" class="btn">Go to Login</button>
+  <div class="home-content">
+    <div class="welcome-section">
+      <h1 class="main-title">Welcome Home!</h1>
+      <div *ngIf="appDataService.username" class="user-welcome">
+        <p class="username-display">Welcome back, {{ appDataService.username }}! 👋</p>
+        <p class="motivational-text">Ready to crush your goals today?</p>
+      </div>
+      <div *ngIf="!appDataService.username" class="guest-welcome">
+        <p class="guest-text">Please log in to continue your journey.</p>
+        <button routerLink="/metrics-app/login" class="btn">Go to Login</button>
+      </div>
+    </div>
+
+    <div *ngIf="appDataService.username" class="motivational-section">
+      <div class="motivational-card">
+        <h3>💪 Your Journey to Success</h3>
+        <p>Every small step you take today brings you closer to your goals. Consistency is the key to transformation.</p>
+      </div>
+      
+      <div class="motivational-card">
+        <h3>📊 Track Your Progress</h3>
+        <p>Monitor your weight journey and build healthy habits. Data-driven decisions lead to lasting results.</p>
+      </div>
+      
+      <div class="motivational-card">
+        <h3>🎯 Stay Focused</h3>
+        <p>Remember why you started. Your future self will thank you for the choices you make today.</p>
+      </div>
+    </div>
+
+    <div *ngIf="appDataService.username" class="action-section">
+      <h3>Ready to Get Started?</h3>
+      <div class="action-buttons">
+        <button routerLink="/metrics-app/weight" class="action-btn weight-btn">
+          <span class="btn-icon">⚖️</span>
+          <span>Track Weight</span>
+        </button>
+        <button routerLink="/metrics-app/habits" class="action-btn habits-btn">
+          <span class="btn-icon">📅</span>
+          <span>Manage Habits</span>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="appDataService.username" class="logout-section">
+      <button (click)="logout()" class="logout-btn">Logout</button>
+    </div>
   </div>
 </div>

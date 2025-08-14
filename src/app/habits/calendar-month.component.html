@@ -1,0 +1,143 @@
+<div class="calendar-container">
+  <!-- Header with navigation -->
+  <div class="calendar-header">
+    <button 
+      class="nav-button" 
+      (click)="onPreviousMonth()"
+      aria-label="Previous month">
+      &lt;&lt;
+    </button>
+    
+    <div class="month-selector">
+      <h2>{{ monthName }} {{ year }}</h2>
+    </div>
+    
+    <button 
+      class="nav-button" 
+      (click)="onNextMonth()"
+      aria-label="Next month">
+      &gt;&gt;
+    </button>
+  </div>
+
+  <!-- Legend -->
+  <div class="calendar-legend">
+    <div class="legend-item">
+      <div class="legend-indicator habit-completed">
+        <span class="legend-text">Sample</span>
+        <span class="legend-icon">✓</span>
+      </div>
+      <span>Done</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-indicator habit-missed">
+        <span class="legend-text">Sample</span>
+        <span class="legend-icon">✗</span>
+      </div>
+      <span>Missed</span>
+    </div>
+  </div>
+
+  <!-- No habits selected message -->
+  @if (getSelectedHabitsCount() === 0) {
+    <div class="no-habits-message">
+      <p>📅 Select a habit from the left sidebar to start tracking your progress!</p>
+    </div>
+  }
+
+  <!-- Day names header -->
+  <div class="calendar-grid">
+    @for (dayName of dayNames; track dayName) {
+      <div class="day-header">
+        {{ dayName }}
+      </div>
+    }
+
+    <!-- Calendar days -->
+    @for (day of calendarDays; track day.entries) {
+      <div 
+        class="calendar-day"
+        [class]="getDayClass(day)"
+        (click)="onDayClick(day, $event)"
+        [title]="getTooltipText(day)"
+        [attr.aria-label]="getTooltipText(day)"
+        tabindex="0"
+        (keydown.enter)="onDayClick(day, $event)"
+        (keydown.space)="onDayClick(day, $event)">
+        
+        <div class="day-number">{{ day.dayOfMonth }}</div>
+        
+        <!-- Habit indicators -->
+        @if (day.entries.length > 0) {
+          <div class="habit-indicators">
+            @for (entry of day.entries; track entry) {
+              <div 
+                class="habit-indicator"
+                [class]="getHabitIndicatorClass(entry)"
+                [title]="entry.habitName + ' - ' + (entry.isCompleted ? 'Done' : 'Missed')">
+                <span class="habit-name">{{ entry.habitName }}</span>
+                <span class="habit-status-icon">
+                  @if (entry.isCompleted) {
+                    ✓
+                  } @else {
+                    ✗
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Habit Selector Popover -->
+@if (showHabitSelectorPopover) {
+  <div class="habit-selector-overlay" (click)="closeHabitSelector()">
+    <div 
+      class="habit-selector-popover"
+      [class.above]="habitSelectorShowAbove"
+      [style.left.px]="habitSelectorPosition.x"
+      [style.top.px]="habitSelectorPosition.y"
+      (click)="$event.stopPropagation()">
+      
+      <div class="habit-selector-header">
+        <h4>Select Habit for {{ habitSelectorDate | date:'MMM d, y' }}</h4>
+        <button 
+          class="close-button" 
+          (click)="closeHabitSelector()"
+          aria-label="Close habit selector">
+          ×
+        </button>
+      </div>
+      
+      <div class="habit-selector-list">
+        @for (habitId of habitSelectorHabitIds; track habitId) {
+          @if (getHabitStatus(habitId, habitSelectorDate); as status) {
+            <button 
+              class="habit-selector-item"
+              [class.completed]="status.isCompleted"
+              [class.not-completed]="status.hasEntry && !status.isCompleted"
+              [class.no-entry]="!status.hasEntry"
+              (click)="onHabitSelect(habitId)">
+              
+              <span class="habit-name">{{ getHabitName(habitId) }}</span>
+              <span class="habit-status">
+                @if (status.hasEntry) {
+                  @if (status.isCompleted) {
+                    ✓ Done
+                  } @else {
+                    ✗ Missed
+                  }
+                } @else {
+                  No entry
+                }
+              </span>
+            </button>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,32 @@
+<div class="habits-page">
+  <div class="page-header">
+    <h1>Habits Tracker</h1>
+    <p>Track your daily habits and build consistency</p>
+  </div>
+
+  <div class="habits-layout">
+    <!-- Left column: Habit list -->
+    <div class="habits-sidebar">
+      <app-habit-list></app-habit-list>
+    </div>
+
+    <!-- Right column: Calendar -->
+    <div class="habits-main">
+      <app-calendar-month></app-calendar-month>
+    </div>
+  </div>
+
+  <!-- Global loading overlay -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <span>Loading...</span>
+    </div>
+  </div>
+
+  <!-- Global error toast -->
+  <div class="error-toast" *ngIf="error" (click)="clearError()">
+    <span>{{ error }}</span>
+    <button class="close-button" aria-label="Close error">×</button>
+  </div>
+</div>

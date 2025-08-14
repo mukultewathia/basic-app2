@@ -1,0 +1,556 @@
+.calendar-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  
+  .nav-button {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+    }
+    
+    &:focus {
+      outline: 2px solid #007bff;
+      outline-offset: 2px;
+    }
+  }
+  
+  .month-selector {
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      color: #212529;
+    }
+  }
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6c757d;
+    
+    .legend-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3px 4px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 500;
+      min-height: 16px;
+      min-width: 60px;
+      
+      &.habit-completed {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        
+        .legend-icon {
+          color: #28a745;
+          font-weight: bold;
+        }
+      }
+      
+      &.habit-missed {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        
+        .legend-icon {
+          color: #dc3545;
+          font-weight: bold;
+        }
+      }
+      
+      .legend-text {
+        text-align: center;
+        margin-bottom: 2px;
+        line-height: 1.2;
+      }
+      
+      .legend-icon {
+        font-size: 10px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: #dee2e6;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  overflow: hidden;
+  
+  .day-header {
+    background: #f8f9fa;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #495057;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .calendar-day {
+    background: white;
+    min-height: 80px;
+    // max-width: 85px;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    
+    &:hover {
+      background: #f8f9fa;
+    }
+    
+    &:focus {
+      outline: 2px solid #007bff;
+      outline-offset: -2px;
+    }
+    
+    &.other-month {
+      background: #f8f9fa;
+      color: #adb5bd;
+      
+      .day-number {
+        color: #adb5bd;
+      }
+    }
+    
+    &.today {
+      background: #e3f2fd;
+      border: 2px solid #2196f3;
+      
+      .day-number {
+        font-weight: 600;
+        color: #1976d2;
+      }
+    }
+    
+    &.future-date {
+      cursor: not-allowed;
+      opacity: 0.6;
+      
+      &:hover {
+        background: white;
+      }
+    }
+    
+    .day-number {
+      font-size: 13px;
+      font-weight: 500;
+      color: #212529;
+      margin-bottom: 3px;
+      text-align: center;
+    }
+    
+    .habit-indicators {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: stretch;
+      margin-top: 3px;
+      
+      .habit-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 3px 4px;
+        border-radius: 3px;
+        font-size: 9px;
+        font-weight: 500;
+        min-height: 16px;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        &.habit-completed {
+          background: #d4edda;
+          border: 1px solid #c3e6cb;
+          color: #155724;
+          
+          .habit-status-icon {
+            color: #28a745;
+            font-weight: bold;
+          }
+        }
+        
+        &.habit-missed {
+          background: #f8d7da;
+          border: 1px solid #f5c6cb;
+          color: #721c24;
+          
+          .habit-status-icon {
+            color: #dc3545;
+            font-weight: bold;
+          }
+        }
+        
+        .habit-name {
+          flex: 1;
+          overflow: hidden;
+          word-wrap: break-word;
+          word-break: break-word;
+          line-height: 1.2;
+          margin-bottom: 2px;
+          text-align: center;
+        }
+        
+        .habit-status-icon {
+          font-size: 10px;
+          flex-shrink: 0;
+          text-align: center;
+          align-self: center;
+        }
+      }
+    }
+  }
+}
+
+.no-habits-message {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+  
+  p {
+    margin: 0;
+    color: #1976d2;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 15px;
+    margin: 10px;
+  }
+  
+  .calendar-header {
+    .month-selector h2 {
+      font-size: 20px;
+    }
+  }
+  
+  .calendar-grid {
+    .calendar-day {
+      min-height: 70px;
+      // max-width: 75px;
+      width: 100%;
+      padding: 4px;
+      
+      .day-number {
+        font-size: 11px;
+      }
+      
+      .habit-indicators {
+        .habit-indicator {
+          padding: 2px 3px;
+          font-size: 8px;
+          min-height: 14px;
+          
+          .habit-name {
+            font-size: 8px;
+            line-height: 1.1;
+          }
+          
+          .habit-status-icon {
+            font-size: 9px;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-container {
+    padding: 10px;
+  }
+  
+  .calendar-header {
+    flex-direction: column;
+    gap: 10px;
+    
+    .nav-button {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+  }
+  
+  .calendar-legend {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .calendar-grid {
+    .day-header {
+      padding: 8px 4px;
+      font-size: 12px;
+    }
+    
+    .calendar-day {
+      min-height: 50px;
+      // max-width: 65px;
+      padding: 3px;
+      
+      .day-number {
+        font-size: 10px;
+      }
+      
+      .habit-indicators {
+        .habit-indicator {
+          padding: 1px 2px;
+          font-size: 7px;
+          min-height: 12px;
+          
+          .habit-name {
+            font-size: 7px;
+            line-height: 1.0;
+          }
+          
+          .habit-status-icon {
+            font-size: 8px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Habit Selector Popover Styles
+.habit-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 100px;
+}
+
+.habit-selector-popover {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  max-width: 350px;
+  transform: translateX(-50%);
+  z-index: 1001;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+  }
+  
+  &.above {
+    transform: translateX(-50%) translateY(-100%);
+    
+    &::before {
+      top: auto;
+      bottom: -8px;
+      border-bottom: none;
+      border-top: 8px solid white;
+    }
+  }
+}
+
+.habit-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9ecef;
+  
+  h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #212529;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #f8f9fa;
+      color: #495057;
+    }
+    
+    &:focus {
+      outline: 2px solid #007bff;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.habit-selector-list {
+  padding: 8px 0;
+  
+  .habit-selector-item {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 12px 20px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    border-radius: 0;
+    
+    &:hover {
+      background: #f8f9fa;
+    }
+    
+    &:focus {
+      outline: 2px solid #007bff;
+      outline-offset: -2px;
+    }
+    
+    &.completed {
+      background: #d4edda;
+      
+      &:hover {
+        background: #c3e6cb;
+      }
+      
+      .habit-status {
+        color: #155724;
+        font-weight: 500;
+      }
+    }
+    
+    &.not-completed {
+      background: #f8d7da;
+      
+      &:hover {
+        background: #f5c6cb;
+      }
+      
+      .habit-status {
+        color: #721c24;
+        font-weight: 500;
+      }
+    }
+    
+    &.no-entry {
+      .habit-status {
+        color: #6c757d;
+        font-style: italic;
+      }
+    }
+    
+    .habit-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #212529;
+    }
+    
+    .habit-status {
+      font-size: 12px;
+      color: #6c757d;
+    }
+  }
+}
+
+// Responsive adjustments for habit selector
+@media (max-width: 768px) {
+  .habit-selector-popover {
+    min-width: 250px;
+    max-width: 300px;
+    margin: 0 10px;
+  }
+  
+  .habit-selector-header {
+    padding: 12px 16px;
+    
+    h4 {
+      font-size: 14px;
+    }
+  }
+  
+  .habit-selector-list {
+    .habit-selector-item {
+      padding: 10px 16px;
+      
+      .habit-name {
+        font-size: 13px;
+        font-weight: 500;
+      }
+      
+      .habit-status {
+        font-size: 11px;
+      }
+    }
+  }
+}

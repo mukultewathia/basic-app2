@@ -13,6 +13,15 @@ export const API_CONFIG = {
   WEIGHTS: {
     ADD_WEIGHT: '/api/weights/addWeight',
     DAILY_AVERAGES: '/api/weights/dailyAverages'
+  },
+  
+  // Habits endpoints
+  HABITS: {
+    GET_ALL: '/api/habits/allHabits',
+    CREATE: '/api/habits/addHabit',
+    GET_ENTRIES: '/api/habits/allHabitEntries',
+    CREATE_ENTRY: '/api/habits/addHabitEntry',
+    DELETE_ENTRY: '/api/habits/deleteHabitEntry'
   }
 };
 
@@ -27,5 +36,12 @@ export const API_URLS = {
   SIGNUP: buildApiUrl(API_CONFIG.SIGNUP),
   ALL_USERS: buildApiUrl(API_CONFIG.ALL_USERS),
   ADD_WEIGHT: buildApiUrl(API_CONFIG.WEIGHTS.ADD_WEIGHT),
-  DAILY_AVERAGES: buildApiUrl(API_CONFIG.WEIGHTS.DAILY_AVERAGES)
+  DAILY_AVERAGES: buildApiUrl(API_CONFIG.WEIGHTS.DAILY_AVERAGES),
+  HABITS: {
+    GET_ALL: buildApiUrl(API_CONFIG.HABITS.GET_ALL),
+    CREATE: buildApiUrl(API_CONFIG.HABITS.CREATE),
+    GET_ENTRIES: buildApiUrl(API_CONFIG.HABITS.GET_ENTRIES),
+    CREATE_ENTRY: buildApiUrl(API_CONFIG.HABITS.CREATE_ENTRY),
+    DELETE_ENTRY: buildApiUrl(API_CONFIG.HABITS.DELETE_ENTRY)
+  }
 }; 

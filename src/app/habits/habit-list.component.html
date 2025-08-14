@@ -1,0 +1,83 @@
+<div class="habit-list-container">
+  <h2>Habits</h2>
+  
+  <!-- Error message -->
+  <div class="error-message" *ngIf="error" (click)="clearError()">
+    <span>{{ error }}</span>
+    <button class="close-button" aria-label="Close error">×</button>
+  </div>
+
+  <!-- Create new habit -->
+  <div class="create-habit-section">
+    <div class="input-group">
+      <input 
+        type="text" 
+        [(ngModel)]="newHabitName"
+        (keypress)="onKeyPress($event)"
+        placeholder="Enter habit name..."
+        class="habit-input"
+        [disabled]="loading"
+        aria-label="New habit name">
+      <button 
+        (click)="createHabit()"
+        [disabled]="!newHabitName.trim() || loading"
+        class="create-button"
+        aria-label="Create habit">
+        <span *ngIf="!loading">Add</span>
+        <span *ngIf="loading">Adding...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Selection limit hint -->
+  <div class="selection-hint" *ngIf="getSelectedCount() >= 3">
+    <span>Maximum 3 habits selected</span>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="loading && habits.length === 0">
+    <div class="spinner"></div>
+    <span>Loading habits...</span>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && habits.length === 0">
+    <p>No habits yet. Create your first habit to get started!</p>
+  </div>
+
+  <!-- Habits list -->
+  <div class="habits-list" *ngIf="habits.length > 0">
+    <div 
+      class="habit-item"
+      *ngFor="let habit of habits; trackBy: trackByHabitId"
+      [class.selected]="isHabitSelected(habit.id)">
+      
+      <div class="habit-content">
+        <label class="habit-checkbox" [title]="getCheckboxTooltip(habit.id)">
+          <input 
+            type="checkbox"
+            [checked]="isHabitSelected(habit.id)"
+            (change)="toggleHabitSelection(habit.id)"
+            [disabled]="!isHabitSelected(habit.id) && !canSelectMoreHabits()"
+            [attr.aria-label]="'Select ' + habit.name">
+          <span class="checkmark"></span>
+        </label>
+        
+        <span class="habit-name">{{ habit.name }}</span>
+      </div>
+      
+      <button 
+        (click)="deleteHabit(habit.id)"
+        [disabled]="loading"
+        class="delete-button"
+        aria-label="Delete habit">
+        ×
+      </button>
+    </div>
+  </div>
+
+  <!-- Selected count -->
+  <div class="selected-count" *ngIf="getSelectedCount() > 0">
+    <span>{{ getSelectedCount() }} of 3 habits selected</span>
+  </div>
+</div>

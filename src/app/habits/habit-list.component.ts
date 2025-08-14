@@ -1,0 +1,236 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { Habit, CreateHabitDto } from './models';
+import { HabitsStore } from './habits.store';
+import { HabitsApiService } from './habits-api.service';
+import { AppDataService } from '../app_service_data';
+
+@Component({
+  selector: 'app-habit-list',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './habit-list.component.html',
+  styleUrls: ['./habit-list.component.scss']
+})
+export class HabitListComponent implements OnInit, OnDestroy {
+  habits: Habit[] = [];
+  selectedHabitIds: number[] = [];
+  newHabitName: string = '';
+  loading: boolean = false;
+  error: string | null = null;
+  
+  private subscriptions = new Subscription();
+
+  constructor(
+    private habitsStore: HabitsStore,
+    private habitsApiService: HabitsApiService,
+    private router: Router,
+    private appDataService: AppDataService
+  ) {}
+
+  ngOnInit(): void {
+    // Subscribe to store observables
+    const habitsSubscription = this.habitsStore.habits$.subscribe(habits => {
+      this.habits = habits;
+    });
+
+    const selectedSubscription = this.habitsStore.selectedHabitIds$.subscribe(selectedIds => {
+      this.selectedHabitIds = selectedIds;
+    });
+
+    const loadingSubscription = this.habitsStore.loading$.subscribe(loading => {
+      this.loading = loading;
+    });
+
+    const errorSubscription = this.habitsStore.error$.subscribe(error => {
+      this.error = error;
+    });
+
+    this.subscriptions.add(habitsSubscription);
+    this.subscriptions.add(selectedSubscription);
+    this.subscriptions.add(loadingSubscription);
+    this.subscriptions.add(errorSubscription);
+
+    // Load habits on init
+    console.log('Loading habits');
+    this.checkAuthenticationAndLoadHabits();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  maxLoadRetries: number = 3;
+  currentLoadRetries: number = 0;
+
+  private checkAuthenticationAndLoadHabits(): void {
+    const username = this.appDataService.username;
+    
+    if (!username) {
+      console.warn('No username available, redirecting to login');
+      this.router.navigate(['/metrics-app/login']);
+      return;
+    }
+
+    this.loadHabits();
+  }
+
+  loadHabits(): void {
+    this.habitsStore.setLoading(true);
+    this.habitsStore.setError(null);
+
+    const username = this.appDataService.username;
+    if (!username) {
+      console.warn('No username available for loading habits');
+      return;
+    }
+
+    if (this.currentLoadRetries >= this.maxLoadRetries) {
+      this.habitsStore.setError('Failed to load habits. Please try again.');
+      this.habitsStore.setLoading(false);
+      return;
+    }
+
+    this.currentLoadRetries++;
+
+    this.habitsApiService.getHabits(username).subscribe({
+      next: (habits) => {
+        // Convert AllHabitData to Habit format
+        const convertedHabits: Habit[] = habits.map(habit => ({
+          id: habit.habitId,
+          name: habit.name,
+          description: habit.description,
+          createdAt: habit.createdAt
+        }));
+        this.habitsStore.setHabits(convertedHabits);
+        this.habitsStore.setLoading(false);
+      },
+      error: (error) => {
+        console.error('Failed to load habits:', error);
+        this.habitsStore.setError('Failed to load habits. Please try again.');
+        this.habitsStore.setLoading(false);
+        
+        // Redirect to login on auth errors
+        if (error.status === 401 || error.status === 403) {
+          this.router.navigate(['/metrics-app/login']);
+        }
+      }
+    });
+  }
+
+  createHabit(): void {
+    if (!this.newHabitName.trim()) {
+      return;
+    }
+
+    this.habitsStore.setLoading(true);
+    this.habitsStore.setError(null);
+
+    const username = this.appDataService.username;
+    if (!username) {
+      console.warn('No username available for creating habit');
+      this.habitsStore.setError('User not authenticated');
+      this.habitsStore.setLoading(false);
+      return;
+    }
+
+    const createHabitDto: CreateHabitDto = {
+      username: username,
+      habitName: this.newHabitName.trim(),
+      description: undefined
+    };
+
+    this.habitsApiService.createHabit(createHabitDto).subscribe({
+      next: (response) => {
+        // Convert response to Habit format and add to store
+        const newHabit: Habit = {
+          id: response.habitId,
+          name: response.name,
+          description: response.description,
+          createdAt: response.createdAt
+        };
+        this.habitsStore.addHabit(newHabit);
+        this.newHabitName = '';
+        this.habitsStore.setLoading(false);
+      },
+      error: (error) => {
+        console.error('Failed to create habit:', error);
+        this.habitsStore.setError('Failed to create habit. Please try again.');
+        this.habitsStore.setLoading(false);
+        
+        // Redirect to login on auth errors
+        if (error.status === 401 || error.status === 403) {
+          this.router.navigate(['/metrics-app/login']);
+        }
+      }
+    });
+  }
+
+  deleteHabit(habitId: number): void {
+    if (!confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
+      return;
+    }
+
+    // Note: Backend doesn't support deleting habits directly, only habit entries
+    // For now, we'll just remove it from the local state
+    this.habitsStore.removeHabit(habitId);
+    
+    // TODO: Implement proper habit deletion if backend supports it
+    // this.habitsApiService.deleteHabit(habitId).subscribe({
+    //   next: () => {
+    //     this.habitsStore.removeHabit(habitId);
+    //   },
+    //   error: (error) => {
+    //     console.error('Failed to delete habit:', error);
+    //     this.habitsStore.setError('Failed to delete habit. Please try again.');
+    //   }
+    // });
+  }
+
+  toggleHabitSelection(habitId: number): void {
+    if (this.habitsStore.isHabitSelected(habitId)) {
+      this.habitsStore.deselectHabit(habitId);
+    } else {
+        this.habitsStore.selectHabit(habitId);
+    }
+  }
+
+  isHabitSelected(habitId: number): boolean {
+    return this.habitsStore.isHabitSelected(habitId);
+  }
+
+  getSelectedCount(): number {
+    return this.habitsStore.getSelectedHabitsCount();
+  }
+
+  onKeyPress(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      this.createHabit();
+    }
+  }
+
+  clearError(): void {
+    this.habitsStore.setError(null);
+  }
+
+  trackByHabitId(index: number, habit: Habit): number {
+    return habit.id;
+  }
+
+  canSelectMoreHabits(): boolean {
+    return this.habitsStore.getSelectedHabitsCount() < 3;
+  }
+
+  getCheckboxTooltip(habitId: number): string {
+    if (this.isHabitSelected(habitId)) {
+      return 'Click to deselect this habit';
+    } else if (this.canSelectMoreHabits()) {
+      return 'Click to select this habit for tracking';
+    } else {
+      return 'Maximum 3 habits selected. Deselect another habit first.';
+    }
+  }
+}
