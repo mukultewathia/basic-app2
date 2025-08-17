@@ -2,17 +2,17 @@
   <div class="home-content">
     <div class="welcome-section">
       <h1 class="main-title">Welcome Home!</h1>
-      <div *ngIf="appDataService.username" class="user-welcome">
-        <p class="username-display">Welcome back, {{ appDataService.username }}! 👋</p>
+      <div *ngIf="authService.username" class="user-welcome">
+        <p class="username-display">Welcome back, {{ authService.username }}! 👋</p>
         <p class="motivational-text">Ready to crush your goals today?</p>
       </div>
-      <div *ngIf="!appDataService.username" class="guest-welcome">
+      <div *ngIf="!authService.username" class="guest-welcome">
         <p class="guest-text">Please log in to continue your journey.</p>
         <button routerLink="/metrics-app/login" class="btn">Go to Login</button>
       </div>
     </div>
 
-    <div *ngIf="appDataService.username" class="motivational-section">
+    <div *ngIf="authService.username" class="motivational-section">
       <div class="motivational-card">
         <h3>💪 Your Journey to Success</h3>
         <p>Every small step you take today brings you closer to your goals. Consistency is the key to transformation.</p>
@@ -29,7 +29,7 @@
       </div>
     </div>
 
-    <div *ngIf="appDataService.username" class="action-section">
+    <div *ngIf="authService.username" class="action-section">
       <h3>Ready to Get Started?</h3>
       <div class="action-buttons">
         <button routerLink="/metrics-app/weight" class="action-btn weight-btn">
@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <div *ngIf="appDataService.username" class="logout-section">
+    <div *ngIf="authService.username" class="logout-section">
       <button (click)="logout()" class="logout-btn">Logout</button>
     </div>
   </div>

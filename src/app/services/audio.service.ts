@@ -4,31 +4,10 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class AudioService {
-  private gunSounds: HTMLAudioElement[] = [];
   private sniperSound: HTMLAudioElement | null = null;
-  private isInitialized = false;
 
   constructor() {
-    this.initializeGunSounds();
     this.initializeSniperSound();
-  }
-
-  private initializeGunSounds(): void {
-    // Create multiple gun sound variations
-    const gunSoundUrls = <string[]>[
-    //   'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT',
-    //   'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT',
-    //   'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'
-    ];
-
-    // gunSoundUrls.forEach((url, index) => {
-    //   const audio = new Audio(url);
-    //   audio.volume = 0.2; // Reduced volume for sniper sound
-    //   audio.preload = 'auto';
-    //   this.gunSounds.push(audio);
-    // });
-
-    this.isInitialized = true;
   }
 
   private initializeSniperSound(): void {
@@ -50,24 +29,6 @@ export class AudioService {
     });
   }
 
-  playGunSound(): void {
-    if (!this.isInitialized) {
-      this.initializeGunSounds();
-    }
-
-    // Play a random gun sound
-    const randomIndex = Math.floor(Math.random() * this.gunSounds.length);
-    const sound = this.gunSounds[randomIndex];
-    
-    // Reset the audio to start
-    sound.currentTime = 0;
-    
-    // Play the sound
-    sound.play().catch(error => {
-      console.log('Audio play failed:', error);
-    });
-  }
-
   // Play sniper sound from file
   playSniperSound(): void {
     if (this.sniperSound) {
@@ -81,14 +42,14 @@ export class AudioService {
         this.playGunSoundWithOscillator();
       });
     } else {
-        console.log('Sniper sound not loaded');
+      console.log('Sniper sound not loaded');
       // Fallback to generated sound if file is not loaded
       this.playGunSoundWithOscillator();
     }
   }
 
   // Enhanced sniper shot sound using Web Audio API
-  playGunSoundWithOscillator(): void {
+  private playGunSoundWithOscillator(): void {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
@@ -152,48 +113,7 @@ export class AudioService {
       noiseOscillator.stop(audioContext.currentTime + 0.4);
 
     } catch (error) {
-      console.log('Web Audio API not supported, falling back to HTML5 audio');
-      this.playGunSound();
-    }
-  }
-
-  // Alternative sniper sound with more realistic characteristics
-  playSniperSoundFromBuffer(): void {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
-      // Create audio buffer for more realistic sound
-      const sampleRate = audioContext.sampleRate;
-      const duration = 0.5; // 500ms sniper shot
-      const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
-      const channelData = buffer.getChannelData(0);
-
-      // Generate sniper shot sound
-      for (let i = 0; i < buffer.length; i++) {
-        const t = i / sampleRate;
-        
-        // Initial sharp crack (high frequency burst)
-        const crack = Math.sin(2 * Math.PI * 2000 * t) * Math.exp(-t * 50);
-        
-        // Lower frequency body
-        const body = Math.sin(2 * Math.PI * 300 * t) * Math.exp(-t * 8);
-        
-        // Noise component
-        const noise = (Math.random() - 0.5) * Math.exp(-t * 15);
-        
-        // Combine all components
-        channelData[i] = (crack * 0.4 + body * 0.3 + noise * 0.2) * 0.3;
-      }
-
-      // Create buffer source and play
-      const source = audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioContext.destination);
-      source.start();
-
-    } catch (error) {
-      console.log('Web Audio API not supported, falling back to oscillator');
-      this.playGunSoundWithOscillator();
+      console.log('Web Audio API not supported');
     }
   }
 } 

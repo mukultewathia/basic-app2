@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { Habit, CreateHabitDto } from './models';
 import { HabitsStore } from './habits.store';
 import { HabitsApiService } from './habits-api.service';
-import { AppDataService } from '../app_service_data';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-habit-list',
@@ -28,7 +28,7 @@ export class HabitListComponent implements OnInit, OnDestroy {
     private habitsStore: HabitsStore,
     private habitsApiService: HabitsApiService,
     private router: Router,
-    private appDataService: AppDataService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -67,26 +67,12 @@ export class HabitListComponent implements OnInit, OnDestroy {
   currentLoadRetries: number = 0;
 
   private checkAuthenticationAndLoadHabits(): void {
-    const username = this.appDataService.username;
-    
-    if (!username) {
-      console.warn('No username available, redirecting to login');
-      this.router.navigate(['/metrics-app/login']);
-      return;
-    }
-
     this.loadHabits();
   }
 
   loadHabits(): void {
     this.habitsStore.setLoading(true);
     this.habitsStore.setError(null);
-
-    const username = this.appDataService.username;
-    if (!username) {
-      console.warn('No username available for loading habits');
-      return;
-    }
 
     if (this.currentLoadRetries >= this.maxLoadRetries) {
       this.habitsStore.setError('Failed to load habits. Please try again.');
@@ -96,7 +82,7 @@ export class HabitListComponent implements OnInit, OnDestroy {
 
     this.currentLoadRetries++;
 
-    this.habitsApiService.getHabits(username).subscribe({
+    this.habitsApiService.getHabits().subscribe({
       next: (habits) => {
         // Convert AllHabitData to Habit format
         const convertedHabits: Habit[] = habits.map(habit => ({
@@ -129,16 +115,7 @@ export class HabitListComponent implements OnInit, OnDestroy {
     this.habitsStore.setLoading(true);
     this.habitsStore.setError(null);
 
-    const username = this.appDataService.username;
-    if (!username) {
-      console.warn('No username available for creating habit');
-      this.habitsStore.setError('User not authenticated');
-      this.habitsStore.setLoading(false);
-      return;
-    }
-
     const createHabitDto: CreateHabitDto = {
-      username: username,
       habitName: this.newHabitName.trim(),
       description: undefined
     };

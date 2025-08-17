@@ -1,6 +1,5 @@
 // Backend DTOs matching the Java HabitDto
 export interface HabitRequest {
-  username: string;
   habitName: string;
   description?: string;
 }
@@ -14,7 +13,6 @@ export interface HabitResponse {
 }
 
 export interface HabitEntryRequest {
-  username: string;
   habitName: string;
   entryDate: string; // LocalDate from backend (YYYY-MM-DD)
   performed: boolean;
@@ -58,13 +56,11 @@ export interface HabitEntry {
 
 // Frontend DTOs for API calls
 export interface CreateHabitDto {
-  username: string;
   habitName: string;
   description?: string;
 }
 
 export interface CreateHabitEntryDto {
-  username: string;
   habitName: string;
   entryDate: string; // YYYY-MM-DD
   performed: boolean;

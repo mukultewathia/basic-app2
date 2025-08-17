@@ -4,7 +4,7 @@
 
 <div class="login-container"  *ngIf="!loggedIn">
   <h2> Login</h2>
-  <form (ngSubmit)="onSubmit(f)" #f="ngForm">
+  <form (ngSubmit)="loginUser(f)" #f="ngForm">
     <div class="form-group">
       <label for="username">Username</label>
       <input
@@ -43,16 +43,6 @@
   </form>
 
   <p *ngIf="message" [class]="isError ? 'error-message' : 'message'">{{ message }}</p>
-</div>
-
-<div *ngIf="users.length" class="user-list-container">
-  <h3>All Registered Users</h3>
-  <ul class="user-list">
-    <li *ngFor="let u of users" class="user-item">
-      <span class="user-icon">👤</span>
-      <span class="username">{{ u.username }}</span>
-    </li>
-  </ul>
 </div>
 
 <div class="contact-section">

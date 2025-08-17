@@ -6,7 +6,7 @@ import { CalendarDay, HabitEntry, CreateHabitEntryDto } from './models';
 import { CalendarService } from './calendar.service';
 import { HabitsStore } from './habits.store';
 import { HabitsApiService } from './habits-api.service';
-import { AppDataService } from '../app_service_data';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-calendar-month',
@@ -36,7 +36,7 @@ export class CalendarMonthComponent implements OnInit, OnDestroy {
     private habitsStore: HabitsStore,
     private habitsApiService: HabitsApiService,
     private router: Router,
-    private appDataService: AppDataService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -85,34 +85,17 @@ export class CalendarMonthComponent implements OnInit, OnDestroy {
     const selectedHabitIds = this.habitsStore.getSelectedHabitIds();
     
     if (selectedHabitIds.length === 0) {
-      // Show user-friendly message
       alert('Please select a habit first by checking the checkbox next to it in the left sidebar.');
       return;
     }
 
-    console.log("selectedHabitIds", selectedHabitIds);
-
-    if (selectedHabitIds.length === 1) {
-      // Single habit selected - toggle directly
-      this.toggleHabitEntry(selectedHabitIds[0], day.date);
-    } else {
-      console.log("multiple habits selected");
-      // Multiple habits selected - show popover
-      this.showHabitSelector(day.date, selectedHabitIds, event);
-    }
+    this.showHabitSelector(day.date, selectedHabitIds, event);
   }
 
   // Toggles the habit entry for a given habit and date. (if not one, creates one with perfomed = true)
   private toggleHabitEntry(habitId: number, date: string): void {
     const currentEntry = this.habitsStore.getEntryForDate(habitId, date);
     const isCompleted = !currentEntry?.isCompleted;
-
-    const username = this.appDataService.username;
-    if (!username) {
-      console.warn('No username available, redirecting to login');
-      this.router.navigate(['/metrics-app/login']);
-      return;
-    }
 
     // Find the habit name for this habitId
     const habit = this.habitsStore.getHabitById(habitId);
@@ -122,7 +105,6 @@ export class CalendarMonthComponent implements OnInit, OnDestroy {
     }
 
     const createEntryDto: CreateHabitEntryDto = {
-      username: username,
       habitName: habit.name,
       entryDate: date,
       performed: isCompleted,

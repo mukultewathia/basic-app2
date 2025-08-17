@@ -1,13 +1,8 @@
 import { Component } from '@angular/core';
-import { FormsModule }       from '@angular/forms';
-import { CommonModule }       from '@angular/common';
-import { HttpClient }       from '@angular/common/http';
-import { catchError }       from 'rxjs/operators';
-import { of }               from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AppDataService } from '../app_service_data';
-import { API_URLS } from '../config/api.config';
-
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -19,6 +14,17 @@ import { API_URLS } from '../config/api.config';
 export class Signup {
   message: string | null = null;
   isError: boolean = false;
+
+  constructor(
+    private readonly router: Router, 
+    private readonly authService: AuthService
+  ) {
+    this.authService.isUserLoggedIn().subscribe((isAuthenticated) => {
+      if (isAuthenticated) {
+        this.router.navigate(['/metrics-app/home']);
+      }
+    });
+  }
 
   // Validation function for username and password
   validateInput(value: string): string {
@@ -45,72 +51,31 @@ export class Signup {
     }
   }
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private appDataService: AppDataService
-  ) {}
+  signupUser(form: { value: { username: string; password: string } }) {
+    const { username, password } = form.value;
+    this.message = null;
+    this.isError = false;
 
-   onSubmit(form: { value: { username: string; password: string } }) {
-      const payload = {
-        username: form.value.username,
-        password: form.value.password
-      };
+    this.authService.signup(username, password).subscribe({
+      next: () => {
+        this.loginAndgoToHome(username, password);
+      },
+      error: () => {
+        this.message = 'Signup failed. Please try again.';
+        this.isError = true;
+      }
+    });
+  }
 
-      // Reset message state
-      this.message = null;
-      this.isError = false;
-
-      this.http
-      .post(API_URLS.SIGNUP, payload, { responseType: 'text' })
-      .pipe(
-        catchError(err => {
-          console.error('Signup error', err);
-          this.message = 'Signup failed. Please try again.';
-          this.isError = true;
-          return of('');       // emit an empty string so subscribe still fires
-        })
-      )
-      .subscribe(responseText => {
-        if (responseText && responseText.includes('created')) {
-          this.message = 'Signup successful! Logging you in...';
-          this.isError = false;
-          
-          // Automatically log in the user after successful signup
-          this.autoLogin(form.value.username, form.value.password);
-        } else {
-          this.message = this.message || 'Signup failed. Please try again.';
-          this.isError = true;
-        }
-      });
-
-    }
-
-    private autoLogin(username: string, password: string): void {
-      const loginPayload = {
-        username: username,
-        password: password
-      };
-
-      this.http
-        .post(API_URLS.LOGIN, loginPayload, { responseType: 'text' })
-        .pipe(
-          catchError(err => {
-            console.error('Auto-login error', err);
-            this.message = 'Signup successful but auto-login failed. Please log in manually.';
-            this.isError = false;
-            return of('');
-          })
-        )
-        .subscribe(responseText => {
-          if (responseText) {
-            // Set user data and redirect to weight page
-            this.appDataService.setUser(username);
-            this.router.navigate(['/metrics-app/weight']);
-          } else {
-            this.message = 'Signup successful but auto-login failed. Please log in manually.';
-            this.isError = false;
-          }
-        });
-    }
+  private loginAndgoToHome(username: string, password: string): void {
+    this.authService.login(username, password).subscribe({
+      next: () => {
+        this.router.navigate(['/metrics-app/home']);
+      },
+      error: () => {
+        this.message = 'login after signup failed.';
+        this.isError = false;
+      }
+    });
+  }
 }

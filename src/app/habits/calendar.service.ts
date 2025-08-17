@@ -11,7 +11,6 @@ export class CalendarService {
    */
   generateCalendarDays(year: number, month: number): CalendarDay[] {
     const firstDayOfMonth = new Date(year, month, 1);
-    const lastDayOfMonth = new Date(year, month + 1, 0);
     const today = new Date();
     
     // Get the day of week for the first day (0 = Sunday, 1 = Monday, etc.)
@@ -146,7 +145,12 @@ export class CalendarService {
   isFutureDate(date: string): boolean {
     const today = new Date();
     const targetDate = new Date(date);
-    return targetDate > today;
+    
+    // Set both dates to start of day (00:00:00) for date-only comparison
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const targetDateStart = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    
+    return targetDateStart > todayStart;
   }
   
   /**

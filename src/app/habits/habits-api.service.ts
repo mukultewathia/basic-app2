@@ -20,8 +20,8 @@ export class HabitsApiService {
   /**
    * Get all habits for a user
    */
-  getHabits(username: string, habitName?: string): Observable<AllHabitData[]> {
-    let params = new HttpParams().set('username', username);
+  getHabits(habitName?: string): Observable<AllHabitData[]> {
+    let params = new HttpParams();
     if (habitName) {
       params = params.set('habitName', habitName);
     }
@@ -34,7 +34,6 @@ export class HabitsApiService {
    */
   createHabit(payload: CreateHabitDto): Observable<any> {
     const habitRequest: HabitRequest = {
-      username: payload.username,
       habitName: payload.habitName,
       description: payload.description
     };
@@ -44,9 +43,8 @@ export class HabitsApiService {
   /**
    * Get habit entries for specified habits
    */
-  getEntries(username: string, habitNames: string[]): Observable<HabitEntryResponse[]> {
+  getEntries(habitNames: string[]): Observable<HabitEntryResponse[]> {
     let params = new HttpParams()
-      .set('username', username)
       .set('habitNames', habitNames.join(','));
     
     return this.http.get<HabitEntryResponse[]>(API_URLS.HABITS.GET_ENTRIES, { params });
@@ -57,7 +55,6 @@ export class HabitsApiService {
    */
   createEntry(payload: CreateHabitEntryDto): Observable<HabitEntryResponse> {
     const entryRequest: HabitEntryRequest = {
-      username: payload.username,
       habitName: payload.habitName,
       entryDate: payload.entryDate,
       performed: payload.performed,

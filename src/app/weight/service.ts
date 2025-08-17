@@ -63,24 +63,22 @@ export class WeightService {
 
   constructor(private http: HttpClient) {}
 
-  getAverageWeight$(username: string): Observable<AvgWeight[]> {
-    const url = `${API_URLS.DAILY_AVERAGES}?userName=${encodeURIComponent(username)}`;
-    
+  getAverageWeight$(): Observable<AvgWeight[]> {
     return this.http
-      .get<AvgWeightDto[]>(url) 
+      .get<AvgWeightDto[]>(API_URLS.DAILY_AVERAGES) 
       .pipe(
         map(dtos => dtos.map(toAvgWeight)) 
       );
   }
 
-  getWeeklyAverageWeight$(username: string): Observable<WeeklyAvgWeight[]> {
-    return this.getAverageWeight$(username).pipe(
+  getWeeklyAverageWeight$(): Observable<WeeklyAvgWeight[]> {
+    return this.getAverageWeight$().pipe(
       map(dailyWeights => calculateWeeklyAverages(dailyWeights))
     );
   }
 
-  getLatestAverageWeight$(username: string): Observable<AvgWeight> {
-    return this.getAverageWeight$(username).pipe(
+  getLatestAverageWeight$(): Observable<AvgWeight> {
+    return this.getAverageWeight$().pipe(
       map(weights => weights[weights.length - 1]) 
     );
   }

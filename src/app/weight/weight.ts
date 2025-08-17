@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { registerables, Chart } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { AppDataService } from '../app_service_data';
+import { AuthService } from '../auth/auth.service';
 import { WeightService } from './service';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartData, ChartOptions, ChartType } from 'chart.js';
+import { ChartData, ChartOptions } from 'chart.js';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
@@ -53,43 +53,26 @@ export class WeightComponent implements OnInit {
   today: string = this.getTodayIST();
 
   constructor(
-    public readonly appDataService: AppDataService,
+    public readonly authService: AuthService,
     private readonly weightService: WeightService,
     private readonly router: Router,
     private readonly http: HttpClient
   ) {}
 
   ngOnInit(): void {
-    this.checkAuthenticationAndLoadData();
+    this.loadWeightData();
   }
 
-  private checkAuthenticationAndLoadData(): void {
-    const username = this.appDataService.username;
-    
-    if (!username) {
-      console.warn('No username available, redirecting to login');
-      this.router.navigate(['/metrics-app/login']);
-      return;
-    }
-
-    this.loadWeightData(username);
-  }
-
-  loadWeightData(username: string | null): void {
-    if (!username) {
-      console.warn('No username provided');
-      return;
-    }
-    
+  loadWeightData(): void {
     if (this.isWeeklyView) {
-      this.loadWeeklyData(username);
+      this.loadWeeklyData();
     } else {
-      this.loadDailyData(username);
+      this.loadDailyData();
     }
   }
 
-  private loadDailyData(username: string): void {
-    this.weightService.getAverageWeight$(username).subscribe({
+  private loadDailyData(): void {
+    this.weightService.getAverageWeight$().subscribe({
       next: (weights) => {
         console.log('Daily weight data received:', weights);
         this.updateDailyChartData(weights);
@@ -104,8 +87,8 @@ export class WeightComponent implements OnInit {
     });
   }
 
-  private loadWeeklyData(username: string): void {
-    this.weightService.getWeeklyAverageWeight$(username).subscribe({
+  private loadWeeklyData(): void {
+    this.weightService.getWeeklyAverageWeight$().subscribe({
       next: (weeklyWeights) => {
         console.log('Weekly weight data received:', weeklyWeights);
         this.updateWeeklyChartData(weeklyWeights);
@@ -161,18 +144,12 @@ export class WeightComponent implements OnInit {
   // Toggle between daily and weekly views
   switchToDailyView(): void {
     this.isWeeklyView = false;
-    const username = this.appDataService.username;
-    if (username) {
-      this.loadWeightData(username);
-    }
+    this.loadWeightData();
   }
 
   switchToWeeklyView(): void {
     this.isWeeklyView = true;
-    const username = this.appDataService.username;
-    if (username) {
-      this.loadWeightData(username);
-    }
+    this.loadWeightData();
   }
 
   // Modal methods
@@ -189,13 +166,6 @@ export class WeightComponent implements OnInit {
   }
 
   submitWeight(weightForm: { value: { weight: number, date: string } }): void {
-    const username = this.appDataService.username;
-    if (!username) {
-      this.modalMessage = 'User not authenticated';
-      this.isModalError = true;
-      return;
-    }
-
     // Get the weight and date values from the form
     const weightKg = weightForm.value.weight;
     let date = weightForm.value.date || this.today;
@@ -210,7 +180,6 @@ export class WeightComponent implements OnInit {
     this.isModalError = false;
 
     const payload = {
-      userName: username,
       weightKg: weightKg,
       date: isoDate
     };
@@ -233,8 +202,8 @@ export class WeightComponent implements OnInit {
           // Close modal after a short delay
           setTimeout(() => {
             this.closeWeightModal();
-            // Reload the weight data to update the chart
-            this.loadWeightData(username);
+                      // Reload the weight data to update the chart
+          this.loadWeightData();
           }, 1500);
       });
   }

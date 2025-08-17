@@ -7,7 +7,7 @@ import { CalendarMonthComponent } from './calendar-month.component';
 import { HabitsStore } from './habits.store';
 import { HabitsApiService } from './habits-api.service';
 import { CalendarService } from './calendar.service';
-import { AppDataService } from '../app_service_data';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-habits-page',
@@ -28,7 +28,7 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
     private habitsApiService: HabitsApiService,
     private calendarService: CalendarService,
     private router: Router,
-    private appDataService: AppDataService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -36,16 +36,8 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
   }
 
   private checkAuthenticationAndLoadData(): void {
-    const username = this.appDataService.username;
-    
-    if (!username) {
-      console.warn('No username available, redirecting to login');
-      this.router.navigate(['/metrics-app/login']);
-      return;
-    }
-
     this.initializeSubscriptions();
-    this.loadHabits(username);
+    this.loadHabits();
   }
 
   private initializeSubscriptions(): void {
@@ -76,11 +68,11 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
     this.subscriptions.add(entriesSubscription);
   }
 
-  private loadHabits(username: string): void {
+  private loadHabits(): void {
     this.habitsStore.setLoading(true);
     this.habitsStore.setError(null);
 
-    this.habitsApiService.getHabits(username).subscribe({
+    this.habitsApiService.getHabits().subscribe({
       next: (habitsData) => {
         console.log('Habits loaded:', habitsData);
         // Transform AllHabitData[] to Habit[]
@@ -138,13 +130,7 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
 
     this.currentLoadRetries++;
 
-    const username = this.appDataService.username;
-    if (!username) {
-      console.warn('No username available for loading entries');
-      return;
-    }
-
-    this.habitsApiService.getEntries(username, selectedHabits).subscribe({
+    this.habitsApiService.getEntries(selectedHabits).subscribe({
       next: (entries) => {
         // Group entries by habit ID
         const entriesByHabitId = new Map<number, any[]>();

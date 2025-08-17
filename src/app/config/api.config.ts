@@ -5,9 +5,11 @@ export const API_CONFIG = {
   BASE_URL: environment.apiBaseUrl,
   
   // Authentication endpoints
-  LOGIN: '/login',
-  SIGNUP: '/signup',
-  ALL_USERS: '/allUsers',
+  LOGIN: '/api/auth/login',
+  LOGOUT: '/api/auth/logout',
+  SIGNUP: '/api/auth/signup',
+  ALL_USERS: '/api/users/allUsers',
+  ME: '/api/auth/me',
   
   // Weight tracking endpoints
   WEIGHTS: {
@@ -32,9 +34,12 @@ export function buildApiUrl(endpoint: string): string {
 
 // Pre-built URLs for common endpoints
 export const API_URLS = {
+  BASE_URL: API_CONFIG.BASE_URL,
   LOGIN: buildApiUrl(API_CONFIG.LOGIN),
+  LOGOUT: buildApiUrl(API_CONFIG.LOGOUT),
   SIGNUP: buildApiUrl(API_CONFIG.SIGNUP),
   ALL_USERS: buildApiUrl(API_CONFIG.ALL_USERS),
+  ME: buildApiUrl(API_CONFIG.ME),
   ADD_WEIGHT: buildApiUrl(API_CONFIG.WEIGHTS.ADD_WEIGHT),
   DAILY_AVERAGES: buildApiUrl(API_CONFIG.WEIGHTS.DAILY_AVERAGES),
   HABITS: {
