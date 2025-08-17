@@ -92,6 +92,10 @@ export class HabitListComponent implements OnInit, OnDestroy {
           createdAt: habit.createdAt
         }));
         this.habitsStore.setHabits(convertedHabits);
+        
+        // Auto-select the top 3 habits if no habits are currently selected
+        this.habitsStore.autoSelectTopHabits();
+        
         this.habitsStore.setLoading(false);
       },
       error: (error) => {
@@ -151,20 +155,27 @@ export class HabitListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Note: Backend doesn't support deleting habits directly, only habit entries
-    // For now, we'll just remove it from the local state
-    this.habitsStore.removeHabit(habitId);
-    
-    // TODO: Implement proper habit deletion if backend supports it
-    // this.habitsApiService.deleteHabit(habitId).subscribe({
-    //   next: () => {
-    //     this.habitsStore.removeHabit(habitId);
-    //   },
-    //   error: (error) => {
-    //     console.error('Failed to delete habit:', error);
-    //     this.habitsStore.setError('Failed to delete habit. Please try again.');
-    //   }
-    // });
+    this.habitsStore.setLoading(true);
+    this.habitsStore.setError(null);
+
+    this.habitsApiService.deleteHabit(habitId).subscribe({
+      next: () => {
+        // Remove from local state after successful API call
+        this.habitsStore.removeHabit(habitId);
+        this.habitsStore.setLoading(false);
+        console.log('Habit deleted successfully');
+      },
+      error: (error) => {
+        console.error('Failed to delete habit:', error);
+        this.habitsStore.setError('Failed to delete habit. Please try again.');
+        this.habitsStore.setLoading(false);
+        
+        // Redirect to login on auth errors
+        if (error.status === 401 || error.status === 403) {
+          this.router.navigate(['/metrics-app/login']);
+        }
+      }
+    });
   }
 
   toggleHabitSelection(habitId: number): void {

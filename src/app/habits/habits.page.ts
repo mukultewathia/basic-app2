@@ -83,6 +83,10 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
           createdAt: habitData.createdAt
         }));
         this.habitsStore.setHabits(habits);
+        
+        // Auto-select the top 3 habits if no habits are currently selected
+        this.habitsStore.autoSelectTopHabits();
+        
         this.habitsStore.setLoading(false);
       },
       error: (error) => {

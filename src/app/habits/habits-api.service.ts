@@ -41,6 +41,14 @@ export class HabitsApiService {
   }
 
   /**
+   * Delete a habit
+   */
+  deleteHabit(habitId: number): Observable<void> {
+    const url = API_URLS.HABITS.DELETE.replace('{habitId}', habitId.toString());
+    return this.http.delete<void>(url);
+  }
+
+  /**
    * Get habit entries for specified habits
    */
   getEntries(habitNames: string[]): Observable<HabitEntryResponse[]> {

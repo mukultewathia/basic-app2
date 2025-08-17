@@ -103,9 +103,34 @@ export class HabitsStore {
     this.updateState({ habits });
   }
 
+  autoSelectTopHabits(): void {
+    const currentHabits = this.currentState.habits;
+    const currentSelectedIds = this.currentState.selectedHabitIds;
+    
+    // Only auto-select if no habits are currently selected and we have habits available
+    if (currentSelectedIds.length === 0 && currentHabits.length > 0) {
+      // Auto-select the top 3 habits (or all if less than 3)
+      const habitsToSelect = currentHabits.slice(0, 3);
+      
+      habitsToSelect.forEach(habit => {
+        this.selectHabit(habit.id);
+      });
+      
+      console.log(`Auto-selected ${habitsToSelect.length} habits:`, habitsToSelect.map(h => h.name));
+    }
+  }
+
   addHabit(habit: Habit): void {
     const currentHabits = this.currentState.habits;
+    const currentSelectedIds = this.currentState.selectedHabitIds;
+    
+    // Add the habit to the list
     this.updateState({ habits: [...currentHabits, habit] });
+    
+    // Auto-select the new habit if we have less than 3 selected
+    if (currentSelectedIds.length < 3) {
+      this.selectHabit(habit.id);
+    }
   }
 
   removeHabit(habitId: number): void {

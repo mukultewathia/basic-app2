@@ -21,6 +21,7 @@ export const API_CONFIG = {
   HABITS: {
     GET_ALL: '/api/habits/allHabits',
     CREATE: '/api/habits/addHabit',
+    DELETE: '/api/habits/{habitId}',
     GET_ENTRIES: '/api/habits/allHabitEntries',
     CREATE_ENTRY: '/api/habits/addHabitEntry',
     DELETE_ENTRY: '/api/habits/deleteHabitEntry'
@@ -45,6 +46,7 @@ export const API_URLS = {
   HABITS: {
     GET_ALL: buildApiUrl(API_CONFIG.HABITS.GET_ALL),
     CREATE: buildApiUrl(API_CONFIG.HABITS.CREATE),
+    DELETE: buildApiUrl(API_CONFIG.HABITS.DELETE),
     GET_ENTRIES: buildApiUrl(API_CONFIG.HABITS.GET_ENTRIES),
     CREATE_ENTRY: buildApiUrl(API_CONFIG.HABITS.CREATE_ENTRY),
     DELETE_ENTRY: buildApiUrl(API_CONFIG.HABITS.DELETE_ENTRY)
