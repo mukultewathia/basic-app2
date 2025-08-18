@@ -24,7 +24,9 @@ export const API_CONFIG = {
     DELETE: '/api/habits/{habitId}',
     GET_ENTRIES: '/api/habits/allHabitEntries',
     CREATE_ENTRY: '/api/habits/addHabitEntry',
-    DELETE_ENTRY: '/api/habits/deleteHabitEntry'
+    DELETE_ENTRY: '/api/habits/deleteHabitEntry',
+    UPSERT_NOTE: '/api/habits/upsertNote',
+    GET_NOTES: '/api/habits/notes'
   }
 };
 
@@ -49,6 +51,8 @@ export const API_URLS = {
     DELETE: buildApiUrl(API_CONFIG.HABITS.DELETE),
     GET_ENTRIES: buildApiUrl(API_CONFIG.HABITS.GET_ENTRIES),
     CREATE_ENTRY: buildApiUrl(API_CONFIG.HABITS.CREATE_ENTRY),
-    DELETE_ENTRY: buildApiUrl(API_CONFIG.HABITS.DELETE_ENTRY)
+    DELETE_ENTRY: buildApiUrl(API_CONFIG.HABITS.DELETE_ENTRY),
+    UPSERT_NOTE: buildApiUrl(API_CONFIG.HABITS.UPSERT_NOTE),
+    GET_NOTES: buildApiUrl(API_CONFIG.HABITS.GET_NOTES)
   }
 }; 

@@ -134,6 +134,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    position: relative;
     
     &:hover {
       background: #f8f9fa;
@@ -243,6 +244,9 @@
         }
       }
     }
+  }
+  .has-note-day {
+    box-shadow: inset 0 0 0 2px rgba(0, 123, 255, 0.35);
   }
 }
 
@@ -553,4 +557,55 @@
       }
     }
   }
+}
+
+.notes-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: none;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  opacity: 0.6;
+  transition: opacity 0.2s, background-color 0.2s, transform 0.1s;
+  z-index: 2;
+
+  &:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);
+  }
+
+  &.has-note {
+    opacity: 1;
+    color: #007bff;
+    font-weight: bold;
+    background-color: rgba(0, 123, 255, 0.1);
+    
+    &:hover {
+      background-color: rgba(0, 123, 255, 0.2);
+    }
+  }
+}
+
+/* Stronger icon visibility when the day itself has a note */
+.has-note-day .notes-button {
+  opacity: 1;
+  color: #0a58ca;
+  background-color: rgba(13, 110, 253, 0.12);
+}
+
+/* Optional small dot indicator near the day number when there is a note */
+.has-note-day .day-number::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background-color: #0d6efd;
+  vertical-align: middle;
 }

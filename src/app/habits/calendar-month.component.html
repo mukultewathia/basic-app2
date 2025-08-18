@@ -58,6 +58,7 @@
       <div 
         class="calendar-day"
         [class]="getDayClass(day)"
+        [class.has-note-day]="hasNote(day.date)"
         (click)="onDayClick(day, $event)"
         [title]="getTooltipText(day)"
         [attr.aria-label]="getTooltipText(day)"
@@ -66,6 +67,18 @@
         (keydown.space)="onDayClick(day, $event)">
         
         <div class="day-number">{{ day.dayOfMonth }}</div>
+        
+        <!-- Notes button -->
+        @if (day.isCurrentMonth && !calendarService.isFutureDate(day.date)) {
+          <button 
+            class="notes-button"
+            (click)="onNotesClick(day, $event)"
+            [class.has-note]="hasNote(day.date)"
+            [title]="getNotesTooltip(day.date)"
+            aria-label="Notes">
+            📝
+          </button>
+        }
         
         <!-- Habit indicators -->
         @if (day.entries.length > 0) {
@@ -140,4 +153,26 @@
       </div>
     </div>
   </div>
+}
+
+<!-- Notes Popup -->
+@if (showNotesPopup) {
+  <app-notes-popup
+    [date]="notesPopupDate"
+    [isVisible]="showNotesPopup"
+    (close)="onNotesClose()"
+    (save)="onNotesSave($event)">
+  </app-notes-popup>
+}
+
+<!-- Habit Confirmation Dialog -->
+@if (showHabitConfirmation) {
+  <app-habit-confirmation
+    [isVisible]="showHabitConfirmation"
+    [habitName]="confirmationHabitName"
+    [date]="confirmationDate"
+    (confirm)="onHabitConfirmationConfirm()"
+    (cancel)="onHabitConfirmationCancel()"
+    (close)="closeHabitConfirmation()">
+  </app-habit-confirmation>
 }

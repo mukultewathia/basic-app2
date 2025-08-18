@@ -84,3 +84,27 @@ export interface CalendarDay {
   isToday: boolean;
   entries: HabitEntry[];
 }
+
+// Note-related interfaces
+export interface NoteRequest {
+  noteDate: string; // LocalDate from backend (YYYY-MM-DD)
+  noteText: string;
+}
+
+export interface NoteResponse {
+  id: number;
+  userId: number;
+  noteText: string;
+  noteDate: string; // LocalDate from backend (YYYY-MM-DD)
+  createdAt: string; // OffsetDateTime from backend
+  updatedAt: string; // OffsetDateTime from backend
+}
+
+export interface Note {
+  id: number;
+  userId: number;
+  noteText: string;
+  noteDate: string; // YYYY-MM-DD
+  createdAt?: string;
+  updatedAt?: string;
+}

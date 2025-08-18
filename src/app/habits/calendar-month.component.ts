@@ -7,11 +7,14 @@ import { CalendarService } from './calendar.service';
 import { HabitsStore } from './habits.store';
 import { HabitsApiService } from './habits-api.service';
 import { AuthService } from '../auth/auth.service';
+import { NotesService } from './notes.service';
+import { NotesPopupComponent } from './notes-popup.component';
+import { HabitConfirmationComponent } from './habit-confirmation.component';
 
 @Component({
   selector: 'app-calendar-month',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NotesPopupComponent, HabitConfirmationComponent],
   templateUrl: './calendar-month.component.html',
   styleUrls: ['./calendar-month.component.scss']
 })
@@ -29,18 +32,40 @@ export class CalendarMonthComponent implements OnInit, OnDestroy {
   habitSelectorPosition: { x: number; y: number } = { x: 0, y: 0 };
   habitSelectorShowAbove: boolean = false;
   
+  // Notes popup state
+  showNotesPopup: boolean = false;
+  notesPopupDate: string = '';
+  
+  // Habit confirmation dialog state
+  showHabitConfirmation: boolean = false;
+  confirmationHabitId: number = 0;
+  confirmationHabitName: string = '';
+  confirmationDate: string = '';
+  
   private subscriptions = new Subscription();
 
   constructor(
-    private calendarService: CalendarService,
+    public calendarService: CalendarService,
     private habitsStore: HabitsStore,
     private habitsApiService: HabitsApiService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private notesService: NotesService
   ) {}
 
   ngOnInit(): void {
     this.dayNames = this.calendarService.getDayNames();
+    
+    // Load notes from backend
+    this.notesService.loadNotes().subscribe({
+      next: () => {
+        console.log('Notes loaded successfully');
+      },
+      error: (error) => {
+        console.error('Failed to load notes:', error);
+        // Continue with calendar initialization even if notes fail to load
+      }
+    });
     
     // Subscribe to state changes with debouncing to prevent excessive updates
     const stateSubscription = combineLatest([
@@ -95,9 +120,28 @@ export class CalendarMonthComponent implements OnInit, OnDestroy {
   // Toggles the habit entry for a given habit and date. (if not one, creates one with perfomed = true)
   private toggleHabitEntry(habitId: number, date: string): void {
     const currentEntry = this.habitsStore.getEntryForDate(habitId, date);
-    const isCompleted = !currentEntry?.isCompleted;
+    
+    // If there's an existing entry, just toggle it
+    if (currentEntry) {
+      const isCompleted = !currentEntry.isCompleted;
+      this.createOrUpdateEntry(habitId, date, isCompleted);
+      return;
+    }
+    
+    // If no entry exists, show confirmation dialog
+    const habit = this.habitsStore.getHabitById(habitId);
+    if (!habit) {
+      console.error('Habit not found for ID:', habitId);
+      return;
+    }
+    
+    this.confirmationHabitId = habitId;
+    this.confirmationHabitName = habit.name;
+    this.confirmationDate = date;
+    this.showHabitConfirmation = true;
+  }
 
-    // Find the habit name for this habitId
+  private createOrUpdateEntry(habitId: number, date: string, performed: boolean): void {
     const habit = this.habitsStore.getHabitById(habitId);
     if (!habit) {
       console.error('Habit not found for ID:', habitId);
@@ -107,7 +151,7 @@ export class CalendarMonthComponent implements OnInit, OnDestroy {
     const createEntryDto: CreateHabitEntryDto = {
       habitName: habit.name,
       entryDate: date,
-      performed: isCompleted,
+      performed: performed,
       notes: undefined
     };
 
@@ -246,5 +290,74 @@ export class CalendarMonthComponent implements OnInit, OnDestroy {
       isCompleted: entry?.isCompleted || false,
       hasEntry: !!entry
     };
+  }
+
+  // Notes-related methods
+  onNotesClick(day: CalendarDay, event: Event): void {
+    if (!day.isCurrentMonth || this.calendarService.isFutureDate(day.date)) {
+      return;
+    }
+
+    event.stopPropagation(); // Prevent triggering day click
+    this.showNotesPopup = true;
+    this.notesPopupDate = day.date;
+  }
+
+  onNotesClose(): void {
+    this.showNotesPopup = false;
+    this.notesPopupDate = '';
+  }
+
+  onNotesSave(data: {date: string, noteText: string}): void {
+    // Note is already saved by the notes service
+    console.log('Note saved for date:', data.date);
+    
+    // Refresh notes to ensure UI is up to date
+    this.refreshNotes();
+  }
+
+  hasNote(date: string): boolean {
+    return this.notesService.hasNote(date);
+  }
+
+  getNotesTooltip(date: string): string {
+    const note = this.notesService.getNote(date);
+    if (note) {
+      const preview = note.noteText.length > 50 
+        ? note.noteText.substring(0, 50) + '...' 
+        : note.noteText;
+      return `Edit notes: ${preview}`;
+    }
+    return 'Add notes';
+  }
+
+  private refreshNotes(): void {
+    this.notesService.loadNotes().subscribe({
+      next: () => {
+        console.log('Notes refreshed successfully');
+      },
+      error: (error) => {
+        console.error('Failed to refresh notes:', error);
+      }
+    });
+  }
+
+  // Habit confirmation dialog methods
+  onHabitConfirmationConfirm(): void {
+    this.createOrUpdateEntry(this.confirmationHabitId, this.confirmationDate, true);
+    this.closeHabitConfirmation();
+  }
+
+  onHabitConfirmationCancel(): void {
+    // Create an entry with performed: false when user clicks Cancel
+    this.createOrUpdateEntry(this.confirmationHabitId, this.confirmationDate, false);
+    this.closeHabitConfirmation();
+  }
+
+  closeHabitConfirmation(): void {
+    this.showHabitConfirmation = false;
+    this.confirmationHabitId = 0;
+    this.confirmationHabitName = '';
+    this.confirmationDate = '';
   }
 }

@@ -8,7 +8,9 @@ import {
   HabitRequest,
   HabitEntryRequest,
   CreateHabitDto,
-  CreateHabitEntryDto
+  CreateHabitEntryDto,
+  NoteRequest,
+  NoteResponse
 } from './models';
 
 @Injectable({
@@ -77,5 +79,23 @@ export class HabitsApiService {
   deleteEntry(entryId: number): Observable<void> {
     const params = new HttpParams().set('entryId', entryId.toString());
     return this.http.delete<void>(API_URLS.HABITS.DELETE_ENTRY, { params });
+  }
+
+  /**
+   * Upsert a note for a specific date
+   */
+  upsertNote(noteDate: string, noteText: string): Observable<NoteResponse> {
+    const noteRequest: NoteRequest = {
+      noteDate: noteDate,
+      noteText: noteText
+    };
+    return this.http.post<NoteResponse>(API_URLS.HABITS.UPSERT_NOTE, noteRequest);
+  }
+
+  /**
+   * Get all notes for the current user
+   */
+  getNotes(): Observable<NoteResponse[]> {
+    return this.http.get<NoteResponse[]>(API_URLS.HABITS.GET_NOTES);
   }
 }
