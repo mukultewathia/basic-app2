@@ -173,7 +173,6 @@ export class WeightComponent implements OnInit {
     // Convert date (YYYY-MM-DD) to ISO 8601 with time and timezone
     // Set time to 00:00:00 in local timezone
     const dateObj = new Date(date);
-    const isoDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), 0, 0, 0).toISOString();
 
     this.isSubmitting = true;
     this.modalMessage = null;
@@ -181,7 +180,7 @@ export class WeightComponent implements OnInit {
 
     const payload = {
       weightKg: weightKg,
-      date: isoDate
+      date: dateObj.toISOString()
     };
 
     this.http.post(API_URLS.ADD_WEIGHT, payload)
