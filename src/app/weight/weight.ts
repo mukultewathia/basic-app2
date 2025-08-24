@@ -40,13 +40,9 @@ export class WeightComponent implements OnInit {
   // Format today as YYYY-MM-DD in IST
   private getTodayIST(): string {
     const now = new Date();
-    // IST is UTC+5:30, so add 5.5 hours in ms
-    const istOffsetMs = 5.5 * 60 * 60 * 1000;
-    const istDate = new Date(now.getTime() + istOffsetMs);
-    // Format as YYYY-MM-DD
-    const yyyy = istDate.getFullYear();
-    const mm = String(istDate.getMonth() + 1).padStart(2, '0');
-    const dd = String(istDate.getDate()).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`;
   }
 
