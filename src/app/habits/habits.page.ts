@@ -93,11 +93,6 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
         console.error('Error loading habits:', error);
         this.habitsStore.setError('Failed to load habits. Please try again.');
         this.habitsStore.setLoading(false);
-        
-        // Redirect to login on auth errors
-        if (error.status === 401 || error.status === 403) {
-          this.router.navigate(['/metrics-app/login']);
-        }
       }
     });
   }

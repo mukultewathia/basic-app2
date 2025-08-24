@@ -171,11 +171,6 @@ export class CalendarMonthComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Failed to create/update habit entry:', error);
-        // Redirect to login on auth errors
-        if (error.status === 401 || error.status === 403) {
-          this.router.navigate(['/metrics-app/login']);
-        }
-        // TODO: Show error toast
       }
     });
   }

@@ -8,6 +8,7 @@ export const API_CONFIG = {
   LOGIN: '/api/auth/login',
   LOGOUT: '/api/auth/logout',
   SIGNUP: '/api/auth/signup',
+  REFRESH: '/api/auth/refresh',
   ALL_USERS: '/api/users/allUsers',
   ME: '/api/auth/me',
   
@@ -30,7 +31,7 @@ export const API_CONFIG = {
   }
 };
 
-// Helper function to build full URLs
+// Builds full URL by adding the base URL to the endpoint
 export function buildApiUrl(endpoint: string): string {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
 }
@@ -40,6 +41,7 @@ export const API_URLS = {
   BASE_URL: API_CONFIG.BASE_URL,
   LOGIN: buildApiUrl(API_CONFIG.LOGIN),
   LOGOUT: buildApiUrl(API_CONFIG.LOGOUT),
+  REFRESH: buildApiUrl(API_CONFIG.REFRESH),
   SIGNUP: buildApiUrl(API_CONFIG.SIGNUP),
   ALL_USERS: buildApiUrl(API_CONFIG.ALL_USERS),
   ME: buildApiUrl(API_CONFIG.ME),

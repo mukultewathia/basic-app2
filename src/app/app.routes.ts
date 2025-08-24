@@ -10,7 +10,7 @@ export const appRoutes: Routes = [
   { path: '',      redirectTo: '/mafia', pathMatch: 'full' },
   { path: 'mafia', component: MafiaComponent },
   { path: 'metrics-app/home',  component: HomeComponent },
-  { path: 'metrics-app/signup',  component: Signup },
+  { path: 'metrics-app/signup-me',  component: Signup },
   { path: 'metrics-app/login', component: LoginComponent },
   { path: 'metrics-app/weight', component: WeightComponent },
   ...habitsRoutes,

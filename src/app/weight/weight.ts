@@ -79,10 +79,6 @@ export class WeightComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching daily weight data:', error);
-        // Optionally redirect to login on API error if it's an auth error
-        if (error.status === 401 || error.status === 403) {
-          this.router.navigate(['/metrics-app/login']);
-        }
       }
     });
   }
@@ -95,10 +91,6 @@ export class WeightComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching weekly weight data:', error);
-        // Optionally redirect to login on API error if it's an auth error
-        if (error.status === 401 || error.status === 403) {
-          this.router.navigate(['/metrics-app/login']);
-        }
       }
     });
   }
@@ -173,6 +165,7 @@ export class WeightComponent implements OnInit {
     // Convert date (YYYY-MM-DD) to ISO 8601 with time and timezone
     // Set time to 00:00:00 in local timezone
     const dateObj = new Date(date);
+    console.log('mafia dateObj', dateObj);
 
     this.isSubmitting = true;
     this.modalMessage = null;

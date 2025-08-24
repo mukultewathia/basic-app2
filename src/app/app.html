@@ -8,6 +8,5 @@
 </nav>
 <nav class="navbar" *ngIf="!authService.isLoggedIn && !isMafiaRoute">
   <a routerLink="/metrics-app/login" routerLinkActive="active">Login</a>
-  <a routerLink="/metrics-app/signup" routerLinkActive="active">Signup</a>
 </nav>
 <router-outlet></router-outlet>
