@@ -19,6 +19,9 @@ export function AuthInterceptor(
   const authService = inject(AuthService);
   const cookieService = inject(CookieService);
 
+  console.log('AuthInterceptor : xsrfToken:', cookieService.getXsrfToken());
+  console.log('AuthInterceptor : jwtToken:', authService.accessToken);
+
   let authRequest = addJwtAndXsrfHeaders(request, cookieService.getXsrfToken() || '', authService.accessToken || '');
 
   return next(authRequest).pipe(
