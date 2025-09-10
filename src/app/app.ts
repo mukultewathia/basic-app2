@@ -15,28 +15,16 @@ export class AppComponent implements OnInit {
   constructor(
     public authService: AuthService,
     private router: Router
-  ) {
-    console.log('AppComponent - Constructor called');
-  }
+  ){}
 
   ngOnInit(): void {
-    console.log('AppComponent - ngOnInit called');
-    this.testAuthStatus();
+    this.navigateToHomeOrLogin();
   }
 
-  testAuthStatus(): void {
-    console.log('AppComponent - Testing auth status...');
+  private navigateToHomeOrLogin(): void {
     this.authService.isUserLoggedIn().subscribe({
-      next: (isAuthenticated) => {
-        console.log('AppComponent - Auth status check result:', isAuthenticated);
-        if (isAuthenticated) {
-          console.log('AppComponent - User is authenticated');
-        } else {
-          console.log('AppComponent - User is not authenticated');
-        }
-      },
-      error: (error) => {
-        console.log('AppComponent - Auth status check error:', error);
+      next: () => {
+          this.router.navigate(['/metrics-app/home']);
       }
     });
   }
@@ -47,7 +35,6 @@ export class AppComponent implements OnInit {
 
   logout(): void {
     this.authService.logout().subscribe(() => {
-      console.log('AppComponent - Logout successful');
       this.router.navigate(['/metrics-app/login']);
     });
   }

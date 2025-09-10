@@ -136,11 +136,6 @@ export class HabitListComponent implements OnInit, OnDestroy {
         console.error('Failed to create habit:', error);
         this.habitsStore.setError('Failed to create habit. Please try again.');
         this.habitsStore.setLoading(false);
-        
-        // Redirect to login on auth errors
-        if (error.status === 401 || error.status === 403) {
-          this.router.navigate(['/metrics-app/login']);
-        }
       }
     });
   }
@@ -164,11 +159,6 @@ export class HabitListComponent implements OnInit, OnDestroy {
         console.error('Failed to delete habit:', error);
         this.habitsStore.setError('Failed to delete habit. Please try again.');
         this.habitsStore.setLoading(false);
-        
-        // Redirect to login on auth errors
-        if (error.status === 401 || error.status === 403) {
-          this.router.navigate(['/metrics-app/login']);
-        }
       }
     });
   }
