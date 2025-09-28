@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, delay, catchError, throwError, map } from 'rxjs';
+import { API_URLS } from '../config/api.config';
 import { 
   ChallengeSummaryResponse, 
   ChallengeDetailResponse,
@@ -16,8 +17,6 @@ import {
   providedIn: 'root'
 })
 export class ChallengeService {
-  private readonly baseUrl = 'http://localhost:8080/api/challenge';
-
   constructor(private http: HttpClient) {}
 
   /**
@@ -28,49 +27,58 @@ export class ChallengeService {
     if (status) {
       params = params.set('status', status);
     }
-    return this.http.get<ChallengeSummaryResponse[]>(this.baseUrl, { params });
+    return this.http.get<ChallengeSummaryResponse[]>(API_URLS.CHALLENGES.LIST, { params });
   }
 
   /**
    * Get challenge details by ID
    */
   detail(challengeId: number): Observable<ChallengeDetailResponse> {
-    return this.http.get<ChallengeDetailResponse>(`${this.baseUrl}/${challengeId}`);
+    const url = API_URLS.CHALLENGES.DETAIL.replace('{challengeId}', challengeId.toString());
+    return this.http.get<ChallengeDetailResponse>(url);
   }
 
   /**
    * Create a new challenge
    */
   create(challengeData: CreateChallengeRequest): Observable<CreateChallengeResponse> {
-    return this.http.post<CreateChallengeResponse>(`${this.baseUrl}/create`, challengeData);
+    return this.http.post<CreateChallengeResponse>(API_URLS.CHALLENGES.CREATE, challengeData);
   }
 
   /**
    * Update challenge (partial update)
    */
   update(challengeId: number, updates: any): Observable<ChallengeDetailResponse> {
-    return this.http.patch<ChallengeDetailResponse>(`${this.baseUrl}/${challengeId}`, updates);
+    const url = API_URLS.CHALLENGES.UPDATE.replace('{challengeId}', challengeId.toString());
+    return this.http.patch<ChallengeDetailResponse>(url, updates);
   }
 
   /**
    * Delete challenge (soft delete)
    */
   delete(challengeId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${challengeId}`);
+    const url = API_URLS.CHALLENGES.DELETE.replace('{challengeId}', challengeId.toString());
+    return this.http.delete<void>(url);
   }
 
   /**
    * Add habit to challenge
    */
   addHabit(challengeId: number, habitId: number): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${challengeId}/addHabit/${habitId}`, {});
+    const url = API_URLS.CHALLENGES.ADD_HABIT
+      .replace('{challengeId}', challengeId.toString())
+      .replace('{habitId}', habitId.toString());
+    return this.http.put<void>(url, {});
   }
 
   /**
    * Remove habit from challenge
    */
   removeHabit(challengeId: number, habitId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${challengeId}/deleteHabit/${habitId}`);
+    const url = API_URLS.CHALLENGES.REMOVE_HABIT
+      .replace('{challengeId}', challengeId.toString())
+      .replace('{habitId}', habitId.toString());
+    return this.http.delete<void>(url);
   }
 
   // --- Habit entry management methods ---
@@ -86,7 +94,7 @@ export class ChallengeService {
       notes: undefined
     };
     
-    return this.http.post<any>(`${this.baseUrl.replace('/challenge', '/habits')}/addHabitEntry`, entryRequest).pipe(
+    return this.http.post<any>(API_URLS.HABITS.CREATE_ENTRY, entryRequest).pipe(
       map(response => ({
         entryId: response.entryId || Math.floor(Math.random() * 1000),
         success: true
@@ -135,7 +143,8 @@ export class ChallengeService {
    * Update challenge details
    */
   updateChallenge(challengeId: number, updateData: any): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/${challengeId}`, updateData, {
+    const url = API_URLS.CHALLENGES.UPDATE.replace('{challengeId}', challengeId.toString());
+    return this.http.patch(url, updateData, {
       headers: {
         'Content-Type': 'application/merge-patch+json'
       }
@@ -152,7 +161,8 @@ export class ChallengeService {
    * Delete challenge (soft delete)
    */
   deleteChallenge(challengeId: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${challengeId}`).pipe(
+    const url = API_URLS.CHALLENGES.DELETE.replace('{challengeId}', challengeId.toString());
+    return this.http.delete(url).pipe(
       map(response => response),
       catchError(error => {
         console.error('Error deleting challenge:', error);

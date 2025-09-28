@@ -28,6 +28,18 @@ export const API_CONFIG = {
     DELETE_ENTRY: '/api/habits/deleteHabitEntry',
     UPSERT_NOTE: '/api/habits/upsertNote',
     GET_NOTES: '/api/habits/notes'
+  },
+  
+  // Challenge endpoints
+  CHALLENGES: {
+    BASE: '/api/challenge',
+    LIST: '/api/challenge',
+    CREATE: '/api/challenge/create',
+    DETAIL: '/api/challenge/{challengeId}',
+    UPDATE: '/api/challenge/{challengeId}',
+    DELETE: '/api/challenge/{challengeId}',
+    ADD_HABIT: '/api/challenge/{challengeId}/addHabit/{habitId}',
+    REMOVE_HABIT: '/api/challenge/{challengeId}/deleteHabit/{habitId}'
   }
 };
 
@@ -56,5 +68,15 @@ export const API_URLS = {
     DELETE_ENTRY: buildApiUrl(API_CONFIG.HABITS.DELETE_ENTRY),
     UPSERT_NOTE: buildApiUrl(API_CONFIG.HABITS.UPSERT_NOTE),
     GET_NOTES: buildApiUrl(API_CONFIG.HABITS.GET_NOTES)
+  },
+  CHALLENGES: {
+    BASE: buildApiUrl(API_CONFIG.CHALLENGES.BASE),
+    LIST: buildApiUrl(API_CONFIG.CHALLENGES.LIST),
+    CREATE: buildApiUrl(API_CONFIG.CHALLENGES.CREATE),
+    DETAIL: buildApiUrl(API_CONFIG.CHALLENGES.DETAIL),
+    UPDATE: buildApiUrl(API_CONFIG.CHALLENGES.UPDATE),
+    DELETE: buildApiUrl(API_CONFIG.CHALLENGES.DELETE),
+    ADD_HABIT: buildApiUrl(API_CONFIG.CHALLENGES.ADD_HABIT),
+    REMOVE_HABIT: buildApiUrl(API_CONFIG.CHALLENGES.REMOVE_HABIT)
   }
 }; 
