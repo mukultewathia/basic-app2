@@ -1,0 +1,34 @@
+@if (isVisible) {
+  <div class="confirmation-overlay" (click)="onOverlayClick($event)">
+    <div class="confirmation-popup" (click)="$event.stopPropagation()">
+      <div class="confirmation-header">
+        <h4>Habit Entry</h4>
+        <button 
+          class="close-button" 
+          (click)="onClose()"
+          aria-label="Close">
+          ×
+        </button>
+      </div>
+      
+      <div class="confirmation-content">
+        <p class="confirmation-message">
+          Did you perform <strong>"{{ habitName }}"</strong> on <strong>{{ formatDate(date) }}</strong>?
+        </p>
+      </div>
+      
+      <div class="confirmation-actions">
+        <button 
+          class="btn btn-secondary" 
+          (click)="onCancel()">
+          No
+        </button>
+        <button 
+          class="btn btn-primary" 
+          (click)="onConfirm()">
+          Yes
+        </button>
+      </div>
+    </div>
+  </div>
+}

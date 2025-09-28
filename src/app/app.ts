@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
   private navigateToHomeOrLogin(): void {
     this.authService.isUserLoggedIn().subscribe({
       next: () => {
-          this.router.navigate(['/metrics-app/home']);
+          // this.router.navigate(['/metrics-app/home']);
       }
     });
   }

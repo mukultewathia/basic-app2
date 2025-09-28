@@ -1,0 +1,51 @@
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-icon:hover {
+  transform: scale(1.1);
+}
+
+.status-completed {
+  background-color: #10b981;
+  color: white;
+}
+
+.status-missed {
+  background-color: #ef4444;
+  color: white;
+}
+
+.status-unknown {
+  background-color: #6b7280;
+  color: white;
+}
+
+.status-scheduled {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.status-active {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.status-expired {
+  background-color: #6b7280;
+  color: white;
+}
+
+.status-deleted {
+  background-color: #374151;
+  color: white;
+}

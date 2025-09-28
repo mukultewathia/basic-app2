@@ -1,0 +1,264 @@
+<div class="challenge-detail-page">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="skeleton-header">
+      <div class="skeleton-title"></div>
+      <div class="skeleton-subtitle"></div>
+      <div class="skeleton-actions"></div>
+    </div>
+    <div class="skeleton-grid">
+      <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+        <div class="skeleton-cell" *ngFor="let j of [1,2,3,4,5]"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="error-state">
+    <div class="error-content">
+      <h3>Unable to load challenge</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="loadChallenge()">Try Again</button>
+      <button class="btn btn-secondary" routerLink="/metrics-app/challenges">Back to Challenges</button>
+    </div>
+  </div>
+
+  <!-- Challenge Detail Content -->
+  <div *ngIf="!isLoading && !error && challenge" class="challenge-content">
+    <!-- Challenge Header -->
+    <div class="challenge-header">
+      <div class="challenge-info">
+        <div class="challenge-title-section">
+          <h1 class="challenge-name">
+            <span class="challenge-icon">🎯</span>
+            {{ challenge.name }}
+          </h1>
+          <div class="challenge-meta">
+            <span class="date-range">
+              <span class="meta-icon">📅</span>
+              {{ formatDate(challenge.startDate) }} - {{ formatDate(challenge.endDate) }}
+            </span>
+          </div>
+        </div>
+        <div class="challenge-status-section">
+          <div class="status-badges">
+            <span class="status-badge" [ngClass]="'status-' + challenge.scheduleStatus">
+              {{ challenge.scheduleStatus | titlecase }}
+            </span>
+            <span class="completion-badge" [ngClass]="'completion-' + challenge.completionStatus">
+              {{ challenge.completionStatus | titlecase }}
+            </span>
+            <span class="success-badge" *ngIf="challenge.successPercent !== undefined">
+              <span class="badge-icon">📈</span>
+              {{ challenge.successPercent }}% success
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="challenge-actions">
+        <button class="btn btn-primary btn-sm" (click)="showModifyChallengeDialog()">
+          <span class="btn-icon">✏️</span>
+          Modify Challenge
+        </button>
+        <button class="btn btn-outline btn-sm" routerLink="/metrics-app/challenges">
+          <span class="btn-icon">←</span>
+          Back to Challenges
+        </button>
+      </div>
+    </div>
+
+
+    <!-- Challenge Grid -->
+    <div class="challenge-grid-container">
+      <div class="grid-header">
+        <div class="grid-cell date-header">Date</div>
+        <div 
+          *ngFor="let habit of habits" 
+          class="grid-cell habit-header"
+          [title]="habit.habitDescription">
+          {{ habit.habitName }}
+        </div>
+        <div class="grid-cell notes-header">Notes</div>
+      </div>
+
+      <div class="grid-body">
+        <div *ngFor="let date of dates; trackBy: trackByDate" class="grid-row">
+          <div class="grid-cell date-cell">
+            <div class="date-info">
+              <span class="day-of-week">{{ date.dayOfWeek }}</span>
+              <span class="formatted-date">{{ date.formattedDate }}</span>
+            </div>
+          </div>
+          
+          <div 
+            *ngFor="let habit of habits; trackBy: trackByHabitId" 
+            class="grid-cell habit-cell"
+            [class.clickable]="!date.isFuture"
+            [class.disabled]="date.isFuture"
+            (click)="onHabitCellClick(habit.habitId, date.date)"
+            [title]="getCellTooltip(habit.habitId, date.date)">
+            <app-status-icon 
+              [status]="getCellStatus(habit.habitId, date.date)">
+            </app-status-icon>
+          </div>
+          
+          <div 
+            class="grid-cell notes-cell"
+            [class.clickable]="!date.isFuture"
+            [class.disabled]="date.isFuture"
+            (click)="onNotesCellClick(date.date)"
+            [title]="getNotesTooltip(date.date)">
+            <div class="notes-preview">
+              {{ getNotesPreview(date.date) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Notes Dialog -->
+  <app-note-dialog
+    [date]="selectedNoteDate"
+    [isVisible]="showNoteDialog"
+    [initialNote]="selectedNoteText"
+    (close)="onNoteDialogClose()"
+    (save)="onNoteDialogSave($event)">
+  </app-note-dialog>
+
+  <!-- Habit Confirmation Dialog -->
+  <app-habit-confirmation
+    [isVisible]="showHabitConfirmation"
+    [habitName]="confirmationHabitName"
+    [date]="confirmationDate"
+    (confirm)="onHabitConfirmationConfirm()"
+    (cancel)="onHabitConfirmationCancel()"
+    (close)="closeHabitConfirmation()">
+  </app-habit-confirmation>
+
+  <!-- Habit Management Dialog -->
+  <div *ngIf="showHabitSelectionDialog" class="modal-overlay" (click)="closeHabitSelectionDialog()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h3>Modify Challenge</h3>
+          <p class="modal-subtitle">Update challenge details and manage habits for "{{ challenge?.name }}"</p>
+        </div>
+        <button class="close-btn" (click)="closeHabitSelectionDialog()">
+          <span class="close-icon">×</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Challenge Update Form -->
+        <div class="challenge-update-section">
+          <h4>Challenge Details</h4>
+          <form [formGroup]="challengeUpdateForm" class="challenge-update-form">
+            <div class="form-group">
+              <label for="challengeName">Challenge Name</label>
+              <input 
+                type="text" 
+                id="challengeName"
+                formControlName="name"
+                class="form-input"
+                placeholder="Enter challenge name">
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <input 
+                  type="date" 
+                  id="startDate"
+                  formControlName="startDate"
+                  class="form-input">
+              </div>
+              
+              <div class="form-group">
+                <label for="durationDays">Duration (Days)</label>
+                <input 
+                  type="number" 
+                  id="durationDays"
+                  formControlName="durationDays"
+                  class="form-input"
+                  min="1"
+                  placeholder="Enter duration in days">
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Current Habits Section -->
+        <div class="current-habits-section">
+          <h4>Current Habits</h4>
+          <div class="current-habits-list" *ngIf="getCurrentHabitsCount() > 0">
+            <div *ngFor="let habit of challenge?.habitsInfo || []" class="current-habit-item">
+              <div class="habit-info">
+                <span class="habit-name">{{ habit.habitName }}</span>
+                <span class="habit-description" *ngIf="habit.habitDescription">{{ habit.habitDescription }}</span>
+              </div>
+              <button 
+                class="btn btn-danger btn-sm" 
+                (click)="removeHabit(habit.habitId, habit.habitName)"
+                [disabled]="isRemovingHabit">
+                <span class="btn-icon">🗑</span>
+                Remove
+              </button>
+            </div>
+          </div>
+          <div class="no-current-habits" *ngIf="getCurrentHabitsCount() === 0">
+            <span class="empty-icon">📝</span>
+            <p>No habits in this challenge yet</p>
+          </div>
+        </div>
+
+        <!-- Add Habits Section -->
+        <div class="add-habits-section">
+          <h4>Add New Habits</h4>
+          <div *ngIf="availableHabits.length === 0" class="no-available-habits">
+            <span class="empty-icon">📝</span>
+            <p>No available habits to add. <a routerLink="/metrics-app/habits">Create a new habit</a> first.</p>
+          </div>
+          <div *ngIf="availableHabits.length > 0" class="available-habits-list">
+            <div *ngFor="let habit of availableHabits" class="available-habit-item">
+              <label class="habit-checkbox">
+                <input 
+                  type="checkbox" 
+                  [value]="habit.habitId"
+                  (change)="toggleHabitSelection(habit.habitId, $event)"
+                  [disabled]="isAddingHabit">
+                <div class="habit-content">
+                  <span class="habit-name">{{ habit.name }}</span>
+                  <span class="habit-description" *ngIf="habit.description">{{ habit.description }}</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeHabitSelectionDialog()" [disabled]="isAddingHabit || isUpdatingChallenge">
+          Cancel
+        </button>
+        <button 
+          class="btn btn-secondary" 
+          (click)="updateChallenge()"
+          [disabled]="challengeUpdateForm.invalid || isUpdatingChallenge">
+          <span class="btn-icon" *ngIf="!isUpdatingChallenge">💾</span>
+          <span *ngIf="isUpdatingChallenge">Updating...</span>
+          <span *ngIf="!isUpdatingChallenge">Save Changes</span>
+        </button>
+        <button 
+          class="btn btn-primary" 
+          (click)="addSelectedHabits()"
+          [disabled]="selectedHabitIds.length === 0 || isAddingHabit">
+          <span class="btn-icon" *ngIf="!isAddingHabit">+</span>
+          <span *ngIf="isAddingHabit">Adding...</span>
+          <span *ngIf="!isAddingHabit">Add Selected Habits</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

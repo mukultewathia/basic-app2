@@ -5,6 +5,7 @@ import {Signup} from './signup/signup';
 import { WeightComponent } from './weight/weight';
 import { MafiaComponent } from './mafia/mafia';
 import { habitsRoutes } from './habits/habits.routes';
+import { challengesRoutes } from './challenges/challenges.routes';
 
 export const appRoutes: Routes = [
   { path: '',      redirectTo: '/mafia', pathMatch: 'full' },
@@ -14,5 +15,6 @@ export const appRoutes: Routes = [
   { path: 'metrics-app/login', component: LoginComponent },
   { path: 'metrics-app/weight', component: WeightComponent },
   ...habitsRoutes,
+  ...challengesRoutes,
   { path: '**',    redirectTo: '/mafia' }
 ];

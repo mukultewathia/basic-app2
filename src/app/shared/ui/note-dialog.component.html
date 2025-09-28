@@ -1,0 +1,42 @@
+@if (isVisible) {
+  <div class="note-dialog-overlay" (click)="onOverlayClick($event)">
+    <div class="note-dialog" (click)="$event.stopPropagation()">
+      <div class="note-dialog-header">
+        <h3>Notes for {{ formatDate(date) }}</h3>
+        <button 
+          class="close-button" 
+          (click)="onClose()"
+          aria-label="Close notes dialog">
+          ×
+        </button>
+      </div>
+      
+      <div class="note-dialog-content">
+        <textarea
+          [(ngModel)]="noteText"
+          placeholder="Add your notes for this day..."
+          rows="6"
+          class="note-textarea"
+          (keydown.ctrl.enter)="onSave()"
+          (keydown.meta.enter)="onSave()"
+          #noteInput>
+        </textarea>
+      </div>
+      
+      <div class="note-dialog-actions">
+        <button 
+          class="btn btn-secondary" 
+          (click)="onClose()"
+          [disabled]="isSaving">
+          Cancel
+        </button>
+        <button 
+          class="btn btn-primary" 
+          (click)="onSave()"
+          [disabled]="isSaving">
+          {{ isSaving ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

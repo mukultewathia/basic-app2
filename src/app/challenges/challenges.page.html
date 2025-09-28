@@ -1,0 +1,150 @@
+<div class="challenges-page">
+  <div class="challenges-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1>Habit Challenges</h1>
+        <p class="challenges-subtitle">Track your daily habits and build lasting routines</p>
+      </div>
+      <button class="btn btn-primary create-challenge-btn" (click)="createChallenge()">
+        Create Challenge
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button 
+      *ngFor="let tab of tabs"
+      class="tab-button"
+      [class.active]="activeTab === tab.id"
+      (click)="onTabClick(tab.id)"
+      [attr.aria-selected]="activeTab === tab.id">
+      <app-status-icon [status]="tab.statusIcon" [size]="'small'"></app-status-icon>
+      {{ tab.label }}
+      <span class="tab-count" *ngIf="tabCounts[tab.id] > 0">({{ tabCounts[tab.id] }})</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="skeleton-list">
+      <div class="skeleton-item" *ngFor="let i of [1,2,3,4,5]">
+        <div class="skeleton-content">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-subtitle"></div>
+          <div class="skeleton-actions"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="error-state">
+    <div class="error-content">
+      <h3>Unable to load challenges</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="loadChallenges()">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !error && challenges.length === 0" class="empty-state">
+    <div class="empty-content">
+      <h3>No {{ getActiveTabLabel() }} challenges</h3>
+      <p>You don't have any {{ getActiveTabLabel().toLowerCase() }} challenges yet.</p>
+      <button class="btn btn-primary" (click)="createChallenge()">Create Challenge</button>
+    </div>
+  </div>
+
+  <!-- Challenges List -->
+  <div *ngIf="!isLoading && !error && challenges.length > 0" class="challenges-list">
+    <div class="challenge-card" *ngFor="let challenge of challenges; trackBy: trackByChallengeId">
+      <div class="challenge-header">
+        <div class="challenge-info">
+          <h3 class="challenge-name">
+            <span class="challenge-icon">🎯</span>
+            {{ challenge.name }}
+          </h3>
+          <div class="challenge-dates">
+            <span class="date-range">
+              <span class="meta-icon">📅</span>
+              {{ formatDate(challenge.startDate) }} - {{ formatDate(challenge.endDate) }}
+            </span>
+          </div>
+          <div class="challenge-status">
+            <span class="status-badge" [ngClass]="'status-' + challenge.scheduleStatus">
+              {{ challenge.scheduleStatus | titlecase }}
+            </span>
+            <span class="completion-badge" [ngClass]="'completion-' + challenge.completionStatus">
+              {{ challenge.completionStatus | titlecase }}
+            </span>
+            <span class="success-badge" *ngIf="challenge.successPercent !== undefined">
+              <span class="badge-icon">📈</span>
+              {{ challenge.successPercent }}% success
+            </span>
+          </div>
+        </div>
+        <div class="challenge-actions">
+          <button 
+            class="btn btn-outline btn-sm"
+            [routerLink]="['/metrics-app/challenges', challenge.challengeId]">
+            <span class="btn-icon">👁</span>
+            View
+          </button>
+          <button 
+            class="btn btn-danger btn-sm"
+            (click)="confirmDeleteChallenge(challenge.challengeId, challenge.name)"
+            [disabled]="isDeletingChallenge">
+            <span class="btn-icon">🗑</span>
+            Delete
+          </button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Create Challenge Dialog -->
+  <app-create-challenge-dialog
+    [isVisible]="showCreateDialog"
+    (close)="onCreateDialogClose()"
+    (create)="onCreateDialogCreate($event)">
+  </app-create-challenge-dialog>
+
+  <!-- Delete Confirmation Dialog -->
+  <div *ngIf="showDeleteDialog" class="modal-overlay" (click)="closeDeleteDialog()">
+    <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h3>Delete Challenge</h3>
+          <p class="modal-subtitle">This action cannot be undone</p>
+        </div>
+        <button class="close-btn" (click)="closeDeleteDialog()">
+          <span class="close-icon">×</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="delete-warning">
+          <span class="warning-icon">⚠️</span>
+          <p>Are you sure you want to delete <strong>"{{ challengeToDelete?.name }}"</strong>?</p>
+          <p class="warning-text">This will permanently remove the challenge and all its data.</p>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-outline" (click)="closeDeleteDialog()" [disabled]="isDeletingChallenge">
+          Cancel
+        </button>
+        <button 
+          class="btn btn-danger" 
+          (click)="deleteChallenge()"
+          [disabled]="isDeletingChallenge">
+          <span class="btn-icon" *ngIf="!isDeletingChallenge">🗑</span>
+          <span *ngIf="isDeletingChallenge">Deleting...</span>
+          <span *ngIf="!isDeletingChallenge">Delete Challenge</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
