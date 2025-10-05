@@ -533,6 +533,31 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     return this.challenge?.habitsInfo?.length || 0;
   }
 
+  getCompletionProgress(): { completed: number; total: number; percentage: number } {
+    if (!this.challenge) return { completed: 0, total: 0, percentage: 0 };
+
+    const totalDays = this.challenge.durationDays;
+    
+    // Calculate days elapsed since challenge started (including current day)
+    const startDate = new Date(this.challenge.startDate);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
+    
+    const endDate = new Date(this.challenge.endDate);
+    const actualEndDate = currentDate > endDate ? endDate : currentDate;
+    
+    const timeDiff = actualEndDate.getTime() - startDate.getTime();
+    const daysElapsed = Math.max(1, 1 + Math.ceil(timeDiff / (1000 * 60 * 60 * 24))); // At least 1 day
+    
+    const percentage = totalDays > 0 ? Math.round((daysElapsed / totalDays) * 100) : 0;
+
+    return {
+      completed: daysElapsed,
+      total: totalDays,
+      percentage: percentage
+    };
+  }
+
   showModifyChallengeDialog(): void {
     this.showHabitSelectionDialog = true;
     this.loadAvailableHabits();

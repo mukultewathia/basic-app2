@@ -42,16 +42,26 @@
         </div>
         <div class="challenge-status-section">
           <div class="status-badges">
-            <span class="status-badge" [ngClass]="'status-' + challenge.scheduleStatus">
+            <!-- <span class="status-badge" [ngClass]="'status-' + challenge.scheduleStatus">
               {{ challenge.scheduleStatus | titlecase }}
-            </span>
-            <span class="completion-badge" [ngClass]="'completion-' + challenge.completionStatus">
-              {{ challenge.completionStatus | titlecase }}
-            </span>
-            <span class="success-badge" *ngIf="challenge.successPercent !== undefined">
-              <span class="badge-icon">📈</span>
-              {{ challenge.successPercent }}% success
-            </span>
+            </span> -->
+          </div>
+          
+          <!-- Progress Bar -->
+          <div class="progress-section">
+            <div class="progress-info">
+              <span class="progress-label">Challenge Progress</span>
+              <span class="progress-text">{{ getCompletionProgress().completed }} of {{ getCompletionProgress().total }} days elapsed</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  [style.width.%]="getCompletionProgress().percentage">
+                </div>
+              </div>
+              <span class="progress-percentage">{{ getCompletionProgress().percentage }}%</span>
+            </div>
           </div>
         </div>
       </div>
