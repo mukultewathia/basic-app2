@@ -137,6 +137,16 @@
     (close)="closeHabitConfirmation()">
   </app-habit-confirmation>
 
+  <!-- Confirmation Dialog -->
+  <app-confirmation-dialog
+    [isVisible]="showConfirmationDialog"
+    [data]="confirmationDialogData"
+    [isLoading]="isRemovingHabit"
+    (confirm)="onConfirmationDialogConfirm()"
+    (cancel)="onConfirmationDialogCancel()"
+    (close)="onConfirmationDialogClose()">
+  </app-confirmation-dialog>
+
   <!-- Habit Management Dialog -->
   <div *ngIf="showHabitSelectionDialog" class="modal-overlay" (click)="closeHabitSelectionDialog()">
     <div class="modal-content" (click)="$event.stopPropagation()">
@@ -227,7 +237,7 @@
                   type="checkbox" 
                   [value]="habit.habitId"
                   (change)="toggleHabitSelection(habit.habitId, $event)"
-                  [disabled]="isAddingHabit">
+                  [disabled]="isUpdatingChallenge">
                 <div class="habit-content">
                   <span class="habit-name">{{ habit.name }}</span>
                   <span class="habit-description" *ngIf="habit.description">{{ habit.description }}</span>
@@ -236,27 +246,20 @@
             </div>
           </div>
         </div>
+
       </div>
       
       <div class="modal-footer">
-        <button class="btn btn-outline" (click)="closeHabitSelectionDialog()" [disabled]="isAddingHabit || isUpdatingChallenge">
+        <button class="btn btn-outline" (click)="closeHabitSelectionDialog()" [disabled]="isUpdatingChallenge">
           Cancel
         </button>
         <button 
-          class="btn btn-secondary" 
+          class="btn btn-primary" 
           (click)="updateChallenge()"
           [disabled]="challengeUpdateForm.invalid || isUpdatingChallenge">
           <span class="btn-icon" *ngIf="!isUpdatingChallenge">💾</span>
-          <span *ngIf="isUpdatingChallenge">Updating...</span>
-          <span *ngIf="!isUpdatingChallenge">Save Changes</span>
-        </button>
-        <button 
-          class="btn btn-primary" 
-          (click)="addSelectedHabits()"
-          [disabled]="selectedHabitIds.length === 0 || isAddingHabit">
-          <span class="btn-icon" *ngIf="!isAddingHabit">+</span>
-          <span *ngIf="isAddingHabit">Adding...</span>
-          <span *ngIf="!isAddingHabit">Add Selected Habits</span>
+          <span *ngIf="isUpdatingChallenge">Saving...</span>
+          <span *ngIf="!isUpdatingChallenge">Save</span>
         </button>
       </div>
     </div>

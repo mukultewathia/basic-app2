@@ -9,10 +9,11 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import 'chartjs-adapter-date-fns';
 import { API_URLS } from '../config/api.config';
+import { SnackbarService } from '../services/snackbar.service';
 
 // Register Chart.js components and the zoom plugin.
 // This is required for chart functionality and zoom support.
@@ -52,7 +53,8 @@ export class WeightComponent implements OnInit {
     public readonly authService: AuthService,
     private readonly weightService: WeightService,
     private readonly router: Router,
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
+    private snackbarService: SnackbarService
   ) {}
 
   ngOnInit(): void {
@@ -174,8 +176,13 @@ export class WeightComponent implements OnInit {
 
     this.http.post(API_URLS.ADD_WEIGHT, payload)
       .pipe(
+        tap(() => {
+          // Show success snackbar
+          this.snackbarService.showWeightAdded(weightKg, date);
+        }),
         catchError(err => {
           console.error('Error adding weight:', err);
+          this.snackbarService.showApiError('add weight entry');
           this.modalMessage = 'Failed to add weight entry. Please try again.';
           this.isModalError = true;
           this.isSubmitting = false;

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Subject, takeUntil, finalize, exhaustMap } from 'rxjs';
+import { Subject, takeUntil, finalize, exhaustMap, forkJoin } from 'rxjs';
 import { ChallengeService } from './challenge.service';
 import { HabitsApiService } from '../habits/habits-api.service';
 import { 
@@ -17,11 +17,12 @@ import { AllHabitData } from '../habits/models';
 import { StatusIconComponent } from '../shared/ui/status-icon.component';
 import { NoteDialogComponent } from '../shared/ui/note-dialog.component';
 import { HabitConfirmationComponent } from './habit-confirmation.component';
+import { ConfirmationDialogComponent, ConfirmationDialogData } from '../shared/ui/confirmation-dialog.component';
 
 @Component({
   selector: 'app-challenge-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, StatusIconComponent, NoteDialogComponent, HabitConfirmationComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, StatusIconComponent, NoteDialogComponent, HabitConfirmationComponent, ConfirmationDialogComponent],
   templateUrl: './challenge-detail.page.html',
   styleUrls: ['./challenge-detail.page.scss']
 })
@@ -52,13 +53,24 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   showHabitSelectionDialog = false;
   availableHabits: AllHabitData[] = [];
   selectedHabitIds: number[] = [];
-  isAddingHabit = false;
   isRemovingHabit = false;
   isHabitsSectionExpanded = false;
 
   // Challenge update properties
   challengeUpdateForm: FormGroup;
   isUpdatingChallenge = false;
+
+  // Confirmation dialog properties
+  showConfirmationDialog = false;
+  confirmationDialogData: ConfirmationDialogData = {
+    title: 'Confirm Action',
+    message: 'Are you sure?',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
+    confirmButtonClass: 'btn-danger',
+    icon: '⚠️'
+  };
+  pendingHabitRemoval: { habitId: number; habitName: string } | null = null;
 
   constructor(
     private challengeService: ChallengeService,
@@ -432,12 +444,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     this.isHabitsSectionExpanded = !this.isHabitsSectionExpanded;
   }
 
-  showAddHabitDialog(): void {
-    this.loadAvailableHabits();
-    this.showHabitSelectionDialog = true;
-    this.selectedHabitIds = [];
-  }
-
   closeHabitSelectionDialog(): void {
     this.showHabitSelectionDialog = false;
     this.availableHabits = [];
@@ -469,41 +475,33 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  addSelectedHabits(): void {
-    if (this.selectedHabitIds.length === 0 || !this.challenge) return;
+  removeHabit(habitId: number, habitName: string): void {
+    if (!this.challenge) return;
 
-    this.isAddingHabit = true;
-    const challengeId = this.challenge.challengeId;
+    // Store the habit info for later removal
+    this.pendingHabitRemoval = { habitId, habitName };
 
-    // Add habits one by one
-    const addPromises = this.selectedHabitIds.map(habitId => 
-      this.challengeService.addHabit(challengeId, habitId).toPromise()
-    );
-
-    Promise.all(addPromises)
-      .then(() => {
-        // Reload the challenge to get updated data
-        this.loadChallenge();
-        this.closeHabitSelectionDialog();
-      })
-      .catch((error) => {
-        console.error('Error adding habits to challenge:', error);
-        this.error = 'Failed to add habits to challenge';
-      })
-      .finally(() => {
-        this.isAddingHabit = false;
-      });
+    // Show confirmation dialog
+    this.confirmationDialogData = {
+      title: 'Remove Habit',
+      message: `Are you sure you want to remove "${habitName}" from this challenge? This action cannot be undone.`,
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      confirmButtonClass: 'btn-danger',
+      icon: '🗑️'
+    };
+    this.showConfirmationDialog = true;
   }
 
-  removeHabit(habitId: number, habitName: string): void {
-    if (!this.challenge || !confirm(`Are you sure you want to remove "${habitName}" from this challenge?`)) {
-      return;
-    }
+  onConfirmationDialogConfirm(): void {
+    if (!this.pendingHabitRemoval || !this.challenge) return;
 
+    this.showConfirmationDialog = false;
     this.isRemovingHabit = true;
     const challengeId = this.challenge.challengeId;
+    const { habitId } = this.pendingHabitRemoval;
 
-    this.challengeService.removeHabit(challengeId, habitId)
+    this.challengeService.removeHabit(challengeId, habitId, this.pendingHabitRemoval.habitName, this.challenge.name)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -516,8 +514,19 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
         },
         complete: () => {
           this.isRemovingHabit = false;
+          this.pendingHabitRemoval = null;
         }
       });
+  }
+
+  onConfirmationDialogCancel(): void {
+    this.showConfirmationDialog = false;
+    this.pendingHabitRemoval = null;
+  }
+
+  onConfirmationDialogClose(): void {
+    this.showConfirmationDialog = false;
+    this.pendingHabitRemoval = null;
   }
 
   getCurrentHabitsCount(): number {
@@ -547,22 +556,56 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
 
     this.isUpdatingChallenge = true;
     const formValue = this.challengeUpdateForm.value;
+    const challengeId = this.challenge.challengeId;
 
-    this.challengeService.updateChallenge(this.challenge.challengeId, formValue)
+    // First, update the challenge details
+    this.challengeService.updateChallenge(challengeId, formValue)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Reload the entire challenge to get fresh data from backend
-          this.loadChallenge();
-          
-          // Close the dialog
-          this.closeHabitSelectionDialog();
+          // If there are selected habits to add, add them after updating the challenge
+          if (this.selectedHabitIds.length > 0) {
+            this.addSelectedHabitsToChallenge(challengeId);
+          } else {
+            // No habits to add, just reload and close
+            this.loadChallenge();
+            this.closeHabitSelectionDialog();
+            this.isUpdatingChallenge = false;
+          }
         },
         error: (error) => {
           console.error('Error updating challenge:', error);
           this.error = 'Failed to update challenge';
+          this.isUpdatingChallenge = false;
+        }
+      });
+  }
+
+  private addSelectedHabitsToChallenge(challengeId: number): void {
+    // Add habits one by one using RxJS operators
+    const addHabitObservables = this.selectedHabitIds.map(habitId => {
+      const habit = this.availableHabits.find(h => h.habitId === habitId);
+      const habitName = habit?.name || 'Unknown Habit';
+      const challengeName = this.challenge?.name || 'Challenge';
+      return this.challengeService.addHabit(challengeId, habitId, habitName, challengeName);
+    });
+
+    // Use forkJoin to wait for all habit additions to complete
+    forkJoin(addHabitObservables)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          // All habits added successfully, reload challenge and close dialog
+          this.loadChallenge();
+          this.closeHabitSelectionDialog();
+          this.isUpdatingChallenge = false;
         },
-        complete: () => {
+        error: (error) => {
+          console.error('Error adding habits to challenge:', error);
+          this.error = 'Failed to add some habits to challenge';
+          // Still reload the challenge to show any successful updates
+          this.loadChallenge();
+          this.closeHabitSelectionDialog();
           this.isUpdatingChallenge = false;
         }
       });

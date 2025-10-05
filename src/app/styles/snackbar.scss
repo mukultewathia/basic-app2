@@ -1,0 +1,240 @@
+// Modern Snackbar Styles
+.modern-snackbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px);
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #1f2937 !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  padding: 16px 20px !important;
+  min-width: 300px !important;
+  max-width: 400px !important;
+  margin: 16px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 12px 12px 0 0;
+  }
+
+  &.snackbar-with-icon {
+    padding-left: 50px !important;
+    
+    &::after {
+      content: attr(data-icon);
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      line-height: 1;
+    }
+  }
+
+  // Success variant
+  &.snackbar-success {
+    &::before {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+    
+    .mat-mdc-snack-bar-action {
+      color: #059669 !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  // Error variant
+  &.snackbar-error {
+    background: rgba(254, 242, 242, 0.95) !important;
+    border-color: rgba(248, 113, 113, 0.2) !important;
+    
+    &::before {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+    
+    .mat-mdc-snack-bar-action {
+      color: #dc2626 !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  // Warning variant
+  &.snackbar-warning {
+    background: rgba(255, 251, 235, 0.95) !important;
+    border-color: rgba(245, 158, 11, 0.2) !important;
+    
+    &::before {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+    
+    .mat-mdc-snack-bar-action {
+      color: #d97706 !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  // Info variant
+  &.snackbar-info {
+    background: rgba(239, 246, 255, 0.95) !important;
+    border-color: rgba(59, 130, 246, 0.2) !important;
+    
+    &::before {
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+    }
+    
+    .mat-mdc-snack-bar-action {
+      color: #2563eb !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  // Action button styling
+  .mat-mdc-snack-bar-action {
+    background: transparent !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    margin-left: 16px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    &:active {
+      transform: translateY(0) !important;
+    }
+  }
+
+  // Message text styling
+  .mat-mdc-snack-bar-label {
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  // Animation improvements
+  &.mat-mdc-snack-bar-entering {
+    transform: translateX(100%) scale(0.95) !important;
+    opacity: 0 !important;
+  }
+
+  &.mat-mdc-snack-bar-entered {
+    transform: translateX(0) scale(1) !important;
+    opacity: 1 !important;
+  }
+
+  &.mat-mdc-snack-bar-exiting {
+    transform: translateX(100%) scale(0.95) !important;
+    opacity: 0 !important;
+  }
+}
+
+// Container positioning
+.cdk-overlay-pane {
+  pointer-events: auto !important;
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .modern-snackbar {
+    background: rgba(17, 24, 39, 0.95) !important;
+    color: #f9fafb !important;
+    border-color: rgba(75, 85, 99, 0.2) !important;
+
+    &.snackbar-error {
+      background: rgba(55, 48, 48, 0.95) !important;
+      border-color: rgba(248, 113, 113, 0.2) !important;
+    }
+
+    &.snackbar-warning {
+      background: rgba(55, 48, 32, 0.95) !important;
+      border-color: rgba(245, 158, 11, 0.2) !important;
+    }
+
+    &.snackbar-info {
+      background: rgba(30, 41, 59, 0.95) !important;
+      border-color: rgba(59, 130, 246, 0.2) !important;
+    }
+
+    .mat-mdc-snack-bar-action:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+}
+
+// Mobile responsiveness
+@media (max-width: 768px) {
+  .modern-snackbar {
+    min-width: 280px !important;
+    max-width: calc(100vw - 32px) !important;
+    margin: 8px 16px !important;
+    font-size: 13px !important;
+    padding: 14px 18px !important;
+
+    &.snackbar-with-icon {
+      padding-left: 45px !important;
+      
+      &::after {
+        left: 14px;
+        font-size: 18px;
+      }
+    }
+
+    .mat-mdc-snack-bar-action {
+      padding: 6px 12px !important;
+      font-size: 12px !important;
+      margin-left: 12px !important;
+    }
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .modern-snackbar {
+    border-width: 2px !important;
+    
+    &.snackbar-success::before {
+      background: #000 !important;
+    }
+    
+    &.snackbar-error::before {
+      background: #000 !important;
+    }
+    
+    &.snackbar-warning::before {
+      background: #000 !important;
+    }
+    
+    &.snackbar-info::before {
+      background: #000 !important;
+    }
+  }
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .modern-snackbar {
+    transition: none !important;
+    
+    .mat-mdc-snack-bar-action {
+      transition: none !important;
+    }
+  }
+}

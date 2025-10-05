@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 import { API_URLS } from '../config/api.config';
+import { SnackbarService } from '../services/snackbar.service';
 import { 
   AllHabitData,
   HabitEntryResponse,
@@ -17,7 +18,10 @@ import {
   providedIn: 'root'
 })
 export class HabitsApiService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private snackbarService: SnackbarService
+  ) {}
 
   /**
    * Get all habits for a user
@@ -39,15 +43,33 @@ export class HabitsApiService {
       habitName: payload.habitName,
       description: payload.description
     };
-    return this.http.post<any>(API_URLS.HABITS.CREATE, habitRequest);
+    return this.http.post<any>(API_URLS.HABITS.CREATE, habitRequest).pipe(
+      tap(() => {
+        this.snackbarService.showHabitCreated(payload.habitName);
+      }),
+      catchError((error) => {
+        this.snackbarService.showApiError('create habit');
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
    * Delete a habit
    */
-  deleteHabit(habitId: number): Observable<void> {
+  deleteHabit(habitId: number, habitName?: string): Observable<void> {
     const url = API_URLS.HABITS.DELETE.replace('{habitId}', habitId.toString());
-    return this.http.delete<void>(url);
+    return this.http.delete<void>(url).pipe(
+      tap(() => {
+        if (habitName) {
+          this.snackbarService.showHabitDeleted(habitName);
+        }
+      }),
+      catchError((error) => {
+        this.snackbarService.showApiError('delete habit');
+        return throwError(() => error);
+      })
+    );
   }
 
   /**

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, delay, catchError, throwError, map } from 'rxjs';
+import { Observable, of, delay, catchError, throwError, map, tap } from 'rxjs';
 import { API_URLS } from '../config/api.config';
+import { SnackbarService } from '../services/snackbar.service';
 import { 
   ChallengeSummaryResponse, 
   ChallengeDetailResponse,
@@ -18,7 +19,10 @@ import {
   providedIn: 'root'
 })
 export class ChallengeService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private snackbarService: SnackbarService
+  ) {}
 
   /**
    * Get challenges by status
@@ -43,7 +47,15 @@ export class ChallengeService {
    * Create a new challenge
    */
   create(challengeData: CreateChallengeRequest): Observable<CreateChallengeResponse> {
-    return this.http.post<CreateChallengeResponse>(API_URLS.CHALLENGES.CREATE, challengeData);
+    return this.http.post<CreateChallengeResponse>(API_URLS.CHALLENGES.CREATE, challengeData).pipe(
+      tap((response) => {
+        this.snackbarService.showChallengeCreated(challengeData.name);
+      }),
+      catchError((error) => {
+        this.snackbarService.showApiError('create challenge');
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
@@ -51,7 +63,15 @@ export class ChallengeService {
    */
   update(challengeId: number, updates: any): Observable<ChallengeDetailResponse> {
     const url = API_URLS.CHALLENGES.UPDATE.replace('{challengeId}', challengeId.toString());
-    return this.http.patch<ChallengeDetailResponse>(url, updates);
+    return this.http.patch<ChallengeDetailResponse>(url, updates).pipe(
+      tap((response) => {
+        this.snackbarService.showChallengeUpdated(updates.name || 'Challenge');
+      }),
+      catchError((error) => {
+        this.snackbarService.showApiError('update challenge');
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
@@ -59,27 +79,55 @@ export class ChallengeService {
    */
   delete(challengeId: number): Observable<void> {
     const url = API_URLS.CHALLENGES.DELETE.replace('{challengeId}', challengeId.toString());
-    return this.http.delete<void>(url);
+    return this.http.delete<void>(url).pipe(
+      tap(() => {
+        this.snackbarService.showChallengeDeleted('Challenge');
+      }),
+      catchError((error) => {
+        this.snackbarService.showApiError('delete challenge');
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
    * Add habit to challenge
    */
-  addHabit(challengeId: number, habitId: number): Observable<void> {
+  addHabit(challengeId: number, habitId: number, habitName?: string, challengeName?: string): Observable<void> {
     const url = API_URLS.CHALLENGES.ADD_HABIT
       .replace('{challengeId}', challengeId.toString())
       .replace('{habitId}', habitId.toString());
-    return this.http.put<void>(url, {});
+    return this.http.put<void>(url, {}).pipe(
+      tap(() => {
+        if (habitName && challengeName) {
+          this.snackbarService.showHabitAdded(habitName, challengeName);
+        }
+      }),
+      catchError((error) => {
+        this.snackbarService.showApiError('add habit to challenge');
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
    * Remove habit from challenge
    */
-  removeHabit(challengeId: number, habitId: number): Observable<void> {
+  removeHabit(challengeId: number, habitId: number, habitName?: string, challengeName?: string): Observable<void> {
     const url = API_URLS.CHALLENGES.REMOVE_HABIT
       .replace('{challengeId}', challengeId.toString())
       .replace('{habitId}', habitId.toString());
-    return this.http.delete<void>(url);
+    return this.http.delete<void>(url).pipe(
+      tap(() => {
+        if (habitName && challengeName) {
+          this.snackbarService.showHabitRemoved(habitName, challengeName);
+        }
+      }),
+      catchError((error) => {
+        this.snackbarService.showApiError('remove habit from challenge');
+        return throwError(() => error);
+      })
+    );
   }
 
   // --- Habit entry management methods ---
@@ -100,8 +148,12 @@ export class ChallengeService {
         entryId: response.entryId || Math.floor(Math.random() * 1000),
         success: true
       })),
+      tap(() => {
+        this.snackbarService.showHabitEntrySaved(habitName, date, performed);
+      }),
       catchError(error => {
         console.error('Failed to save habit entry:', error);
+        this.snackbarService.showApiError('save habit entry');
         return throwError(() => error);
       })
     );
@@ -119,8 +171,12 @@ export class ChallengeService {
     };
     
     return this.http.post<SaveNoteResponse>(url, request).pipe(
+      tap(() => {
+        this.snackbarService.showNoteSaved(date);
+      }),
       catchError(error => {
         console.error('Failed to save note:', error);
+        this.snackbarService.showApiError('save note');
         return throwError(() => error);
       })
     );
