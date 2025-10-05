@@ -105,8 +105,7 @@ export interface SaveHabitEntryRequest {
 }
 
 export interface SaveNoteRequest {
-  challengeId: number;
-  date: string;
+  noteDate: string; // YYYY-MM-DD format to match backend
   noteText: string;
 }
 
@@ -115,8 +114,26 @@ export interface SaveHabitEntryResponse {
   success: boolean;
 }
 
+export interface NoteResponse {
+  id: number;
+  userId: number;
+  noteText: string;
+  noteDate: string; // YYYY-MM-DD format
+  createdAt: string; // ISO string
+  updatedAt: string; // ISO string
+  challengeId: number;
+  message?: string;
+}
+
 export interface SaveNoteResponse {
-  success: boolean;
+  id: number;
+  userId: number;
+  noteText: string;
+  noteDate: string;
+  createdAt: string;
+  updatedAt: string;
+  challengeId: number;
+  message?: string;
 }
 
 // Create challenge request/response

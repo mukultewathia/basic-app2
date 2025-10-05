@@ -39,7 +39,9 @@ export const API_CONFIG = {
     UPDATE: '/api/challenge/{challengeId}',
     DELETE: '/api/challenge/{challengeId}',
     ADD_HABIT: '/api/challenge/{challengeId}/addHabit/{habitId}',
-    REMOVE_HABIT: '/api/challenge/{challengeId}/deleteHabit/{habitId}'
+    REMOVE_HABIT: '/api/challenge/{challengeId}/deleteHabit/{habitId}',
+    UPSERT_NOTE: '/api/challenge/{challengeId}/note',
+    GET_NOTES: '/api/challenge/{challengeId}/notes'
   }
 };
 
@@ -77,6 +79,8 @@ export const API_URLS = {
     UPDATE: buildApiUrl(API_CONFIG.CHALLENGES.UPDATE),
     DELETE: buildApiUrl(API_CONFIG.CHALLENGES.DELETE),
     ADD_HABIT: buildApiUrl(API_CONFIG.CHALLENGES.ADD_HABIT),
-    REMOVE_HABIT: buildApiUrl(API_CONFIG.CHALLENGES.REMOVE_HABIT)
+    REMOVE_HABIT: buildApiUrl(API_CONFIG.CHALLENGES.REMOVE_HABIT),
+    UPSERT_NOTE: buildApiUrl(API_CONFIG.CHALLENGES.UPSERT_NOTE),
+    GET_NOTES: buildApiUrl(API_CONFIG.CHALLENGES.GET_NOTES)
   }
 }; 

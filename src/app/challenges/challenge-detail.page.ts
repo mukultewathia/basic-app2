@@ -109,6 +109,7 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
         next: (challenge) => {
           this.challenge = challenge;
           this.buildGridData();
+          this.loadExistingNotes();
         },
         error: (error) => {
           console.error('Failed to load challenge:', error);
@@ -144,6 +145,33 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
         });
       });
     });
+  }
+
+  private loadExistingNotes(): void {
+    if (!this.challenge) return;
+
+    this.challengeService.getNotes(this.challenge.challengeId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (notes) => {
+          // Clear existing notes
+          this.notes.clear();
+          
+          // Populate notes map
+          notes.forEach(note => {
+            const gridNote: ChallengeGridNote = {
+              date: note.noteDate,
+              noteText: note.noteText,
+              hasNote: note.noteText.trim().length > 0
+            };
+            this.notes.set(note.noteDate, gridNote);
+          });
+        },
+        error: (error) => {
+          console.error('Failed to load existing notes:', error);
+          // Don't show error to user as this is not critical functionality
+        }
+      });
   }
 
   private generateDateRange(startDate: string, endDate: string): ChallengeGridDate[] {
@@ -283,8 +311,15 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     this.challengeService.saveNote(this.challenge!.challengeId, event.date, event.noteText)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          console.log('Note saved successfully');
+        next: (response) => {
+          console.log('Note saved successfully:', response);
+          // Update the note with the response data (includes ID, timestamps, etc.)
+          const updatedNote: ChallengeGridNote = {
+            date: response.noteDate,
+            noteText: response.noteText,
+            hasNote: response.noteText.trim().length > 0
+          };
+          this.notes.set(response.noteDate, updatedNote);
         },
         error: (error) => {
           console.error('Failed to save note:', error);

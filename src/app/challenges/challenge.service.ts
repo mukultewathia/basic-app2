@@ -9,6 +9,7 @@ import {
   SaveNoteRequest,
   SaveHabitEntryResponse,
   SaveNoteResponse,
+  NoteResponse,
   CreateChallengeRequest,
   CreateChallengeResponse
 } from './models';
@@ -107,13 +108,17 @@ export class ChallengeService {
   }
 
   /**
-   * Save note with optimistic update
-   * TODO: Replace with real endpoint when available
+   * Save note using the challenge note endpoint
    */
-  saveNote(challengeId: number, date: string, note: string): Observable<SaveNoteResponse> {
-    // Simulate API call with delay
-    return of({ success: true }).pipe(
-      delay(150),
+  saveNote(challengeId: number, date: string, noteText: string): Observable<SaveNoteResponse> {
+    const url = API_URLS.CHALLENGES.UPSERT_NOTE.replace('{challengeId}', challengeId.toString());
+    
+    const request: SaveNoteRequest = {
+      noteDate: date,
+      noteText: noteText
+    };
+    
+    return this.http.post<SaveNoteResponse>(url, request).pipe(
       catchError(error => {
         console.error('Failed to save note:', error);
         return throwError(() => error);
@@ -128,6 +133,19 @@ export class ChallengeService {
   getHabitEntry(challengeId: number, habitId: number, date: string): Observable<any> {
     // This would be used to fetch existing entries for optimistic updates
     return of(null);
+  }
+
+  /**
+   * Get all notes for a challenge
+   */
+  getNotes(challengeId: number): Observable<NoteResponse[]> {
+    const url = API_URLS.CHALLENGES.GET_NOTES.replace('{challengeId}', challengeId.toString());
+    return this.http.get<NoteResponse[]>(url).pipe(
+      catchError(error => {
+        console.error('Failed to get notes:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
