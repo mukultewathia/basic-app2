@@ -47,9 +47,18 @@
 
   <!-- Habits list -->
   <div class="habits-list" *ngIf="habits.length > 0">
+    <div class="list-controls">
+      <button 
+        (click)="toggleShowAllHabits()" 
+        class="select-habits-button"
+        [class.active]="showAllHabits">
+        {{ showAllHabits ? 'Done' : 'Select habits' }}
+      </button>
+    </div>
+
     <div 
       class="habit-item"
-      *ngFor="let habit of habits; trackBy: trackByHabitId"
+      *ngFor="let habit of visibleHabits; trackBy: trackByHabitId"
       [class.selected]="isHabitSelected(habit.id)">
       
       <div class="habit-content">

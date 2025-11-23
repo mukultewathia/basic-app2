@@ -21,7 +21,8 @@ export class HabitListComponent implements OnInit, OnDestroy {
   newHabitName: string = '';
   loading: boolean = false;
   error: string | null = null;
-  
+  showAllHabits: boolean = false;
+
   private subscriptions = new Subscription();
 
   constructor(
@@ -29,7 +30,7 @@ export class HabitListComponent implements OnInit, OnDestroy {
     private habitsApiService: HabitsApiService,
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Subscribe to store observables
@@ -92,10 +93,10 @@ export class HabitListComponent implements OnInit, OnDestroy {
           createdAt: habit.createdAt
         }));
         this.habitsStore.setHabits(convertedHabits);
-        
+
         // Auto-select the top 3 habits if no habits are currently selected
         this.habitsStore.autoSelectTopHabits();
-        
+
         this.habitsStore.setLoading(false);
       },
       error: (error) => {
@@ -167,7 +168,7 @@ export class HabitListComponent implements OnInit, OnDestroy {
     if (this.habitsStore.isHabitSelected(habitId)) {
       this.habitsStore.deselectHabit(habitId);
     } else {
-        this.habitsStore.selectHabit(habitId);
+      this.habitsStore.selectHabit(habitId);
     }
   }
 
@@ -205,5 +206,26 @@ export class HabitListComponent implements OnInit, OnDestroy {
     } else {
       return 'Maximum 3 habits selected. Deselect another habit first.';
     }
+  }
+
+  /**
+   * Returns the list of habits to display based on the current view mode.
+   * If showAllHabits is true, returns all habits.
+   * Otherwise, returns only the selected habits.
+   */
+  get visibleHabits(): Habit[] {
+    if (this.showAllHabits) {
+      return this.habits;
+    }
+    return this.habits.filter(h => this.isHabitSelected(h.id));
+  }
+
+  /**
+   * Toggles the visibility of non-selected habits.
+   * When true, all habits are shown to allow selection.
+   * When false, only selected habits are shown for a cleaner view.
+   */
+  toggleShowAllHabits(): void {
+    this.showAllHabits = !this.showAllHabits;
   }
 }
