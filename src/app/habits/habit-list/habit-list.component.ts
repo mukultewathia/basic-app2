@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Habit, CreateHabitDto } from './models';
-import { HabitsStore } from './habits.store';
-import { HabitsApiService } from './habits-api.service';
-import { AuthService } from '../auth/auth.service';
+import { Habit, CreateHabitDto } from '../models';
+import { HabitsStore, MAX_SELECTED_HABITS } from '../habits.store';
+import { HabitsApiService } from '../habits-api.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-habit-list',
@@ -22,6 +22,7 @@ export class HabitListComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   error: string | null = null;
   showAllHabits: boolean = false;
+  readonly MAX_SELECTED_HABITS = MAX_SELECTED_HABITS;
 
   private subscriptions = new Subscription();
 
@@ -94,7 +95,6 @@ export class HabitListComponent implements OnInit, OnDestroy {
         }));
         this.habitsStore.setHabits(convertedHabits);
 
-        // Auto-select the top 3 habits if no habits are currently selected
         this.habitsStore.autoSelectTopHabits();
 
         this.habitsStore.setLoading(false);
@@ -195,7 +195,7 @@ export class HabitListComponent implements OnInit, OnDestroy {
   }
 
   canSelectMoreHabits(): boolean {
-    return this.habitsStore.getSelectedHabitsCount() < 3;
+    return this.habitsStore.getSelectedHabitsCount() < MAX_SELECTED_HABITS;
   }
 
   getCheckboxTooltip(habitId: number): string {
@@ -204,7 +204,7 @@ export class HabitListComponent implements OnInit, OnDestroy {
     } else if (this.canSelectMoreHabits()) {
       return 'Click to select this habit for tracking';
     } else {
-      return 'Maximum 3 habits selected. Deselect another habit first.';
+      return `Maximum ${MAX_SELECTED_HABITS} habits selected. Deselect another habit first.`;
     }
   }
 

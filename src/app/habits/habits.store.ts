@@ -28,6 +28,8 @@ const initialState: HabitsState = {
   error: null
 };
 
+export const MAX_SELECTED_HABITS = 5;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -41,44 +43,56 @@ export class HabitsStore {
     distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
     shareReplay(1)
   );
-  
+
   public selectedHabitIds$ = this.state$.pipe(
     map(state => state.selectedHabitIds),
     distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
     shareReplay(1)
   );
-  
+
   public selectedHabits$ = this.state$.pipe(
     map(state => state.habits.filter(habit => state.selectedHabitIds.includes(habit.id))),
     distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
     shareReplay(1)
   );
-  
+
   public entriesByHabitId$ = this.state$.pipe(
-    map(state => state.entriesByHabitId),
+    map(state => {
+      const entriesMap = new Map<number, HabitEntry[]>();
+      state.entriesByHabitId.forEach((dateMap, habitId) => {
+        entriesMap.set(habitId, Array.from(dateMap.values()));
+      });
+      return entriesMap;
+    }),
+    distinctUntilChanged((prev, curr) => {
+      // Deep comparison is expensive, but necessary for Map<number, HabitEntry[]>
+      // A simpler check is size + keys, or just reference if we trust immutability
+      return false; // Always emit for now to ensure updates propagate
+    }),
+    shareReplay(1)
   );
-  
+
   public currentYear$ = this.state$.pipe(
     map(state => state.currentYear),
     startWith(initialState.currentYear),
     distinctUntilChanged(),
     shareReplay(1)
   );
-  
+
   public currentMonth$ = this.state$.pipe(
     map(state => state.currentMonth),
     startWith(initialState.currentMonth),
     distinctUntilChanged(),
     shareReplay(1)
   );
-  
+
   public loading$ = this.state$.pipe(
     map(state => state.loading),
     startWith(initialState.loading),
     distinctUntilChanged(),
     shareReplay(1)
   );
-  
+
   public error$ = this.state$.pipe(
     map(state => state.error),
     startWith(initialState.error),
@@ -106,16 +120,16 @@ export class HabitsStore {
   autoSelectTopHabits(): void {
     const currentHabits = this.currentState.habits;
     const currentSelectedIds = this.currentState.selectedHabitIds;
-    
+
     // Only auto-select if no habits are currently selected and we have habits available
     if (currentSelectedIds.length === 0 && currentHabits.length > 0) {
-      // Auto-select the top 3 habits (or all if less than 3)
-      const habitsToSelect = currentHabits.slice(0, 3);
-      
+      // Auto-select the top N habits (or all if less than N)
+      const habitsToSelect = currentHabits.slice(0, 2);
+
       habitsToSelect.forEach(habit => {
         this.selectHabit(habit.id);
       });
-      
+
       console.log(`Auto-selected ${habitsToSelect.length} habits:`, habitsToSelect.map(h => h.name));
     }
   }
@@ -123,12 +137,12 @@ export class HabitsStore {
   addHabit(habit: Habit): void {
     const currentHabits = this.currentState.habits;
     const currentSelectedIds = this.currentState.selectedHabitIds;
-    
+
     // Add the habit to the list
     this.updateState({ habits: [...currentHabits, habit] });
-    
-    // Auto-select the new habit if we have less than 3 selected
-    if (currentSelectedIds.length < 3) {
+
+    // Auto-select the new habit if we have less than limit selected
+    if (currentSelectedIds.length < MAX_SELECTED_HABITS) {
       this.selectHabit(habit.id);
     }
   }
@@ -140,9 +154,9 @@ export class HabitsStore {
     // Remove entries for this habit
     const currentEntries = this.currentState.entriesByHabitId;
     currentEntries.delete(habitId);
-    
-    this.updateState({ 
-      habits: currentHabits, 
+
+    this.updateState({
+      habits: currentHabits,
       selectedHabitIds: currentSelectedIds,
       entriesByHabitId: new Map(currentEntries)
     });
@@ -150,13 +164,13 @@ export class HabitsStore {
 
   selectHabit(habitId: number): void {
     const currentSelectedIds = this.currentState.selectedHabitIds;
-    if (currentSelectedIds.length >= 3) {
-      return; // Max 3 habits allowed
+    if (currentSelectedIds.length >= MAX_SELECTED_HABITS) {
+      return; // Max habits allowed
     }
 
     if (!currentSelectedIds.includes(habitId)) {
-      this.updateState({ 
-        selectedHabitIds: [...currentSelectedIds, habitId] 
+      this.updateState({
+        selectedHabitIds: [...currentSelectedIds, habitId]
       });
     }
   }
@@ -169,11 +183,11 @@ export class HabitsStore {
   setEntries(habitId: number, entries: HabitEntry[]): void {
     const currentEntries = new Map(this.currentState.entriesByHabitId);
     const entriesMap = new Map<string, HabitEntry>();
-    
+
     entries.forEach(entry => {
       entriesMap.set(entry.date, entry);
     });
-    
+
     currentEntries.set(habitId, entriesMap);
     this.updateState({ entriesByHabitId: currentEntries });
   }
@@ -225,7 +239,7 @@ export class HabitsStore {
   }
 
   canSelectMoreHabits(): boolean {
-    return this.currentState.selectedHabitIds.length < 3;
+    return this.currentState.selectedHabitIds.length < MAX_SELECTED_HABITS;
   }
 
   getSelectedHabitIds(): number[] {

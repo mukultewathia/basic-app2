@@ -41,23 +41,16 @@
           </div>
         </div>
         <div class="challenge-status-section">
-          <div class="status-badges">
-            <!-- <span class="status-badge" [ngClass]="'status-' + challenge.scheduleStatus">
-              {{ challenge.scheduleStatus | titlecase }}
-            </span> -->
-          </div>
-          
           <!-- Progress Bar -->
           <div class="progress-section">
             <div class="progress-info">
               <span class="progress-label">Challenge Progress</span>
-              <span class="progress-text">{{ getCompletionProgress().completed }} of {{ getCompletionProgress().total }} days elapsed</span>
+              <span class="progress-text">{{ getCompletionProgress().completed }} of {{ getCompletionProgress().total }}
+                days elapsed</span>
             </div>
             <div class="progress-bar-container">
               <div class="progress-bar">
-                <div 
-                  class="progress-fill" 
-                  [style.width.%]="getCompletionProgress().percentage">
+                <div class="progress-fill" [style.width.%]="getCompletionProgress().percentage">
                 </div>
               </div>
               <span class="progress-percentage">{{ getCompletionProgress().percentage }}%</span>
@@ -82,10 +75,7 @@
     <div class="challenge-grid-container">
       <div class="grid-header">
         <div class="grid-cell date-header">Date</div>
-        <div 
-          *ngFor="let habit of habits" 
-          class="grid-cell habit-header"
-          [title]="habit.habitDescription">
+        <div *ngFor="let habit of habits" class="grid-cell habit-header" [title]="habit.habitDescription">
           {{ habit.habitName }}
         </div>
         <div class="grid-cell notes-header">Notes</div>
@@ -99,25 +89,16 @@
               <span class="formatted-date">{{ date.formattedDate }}</span>
             </div>
           </div>
-          
-          <div 
-            *ngFor="let habit of habits; trackBy: trackByHabitId" 
-            class="grid-cell habit-cell"
-            [class.clickable]="!date.isFuture"
-            [class.disabled]="date.isFuture"
-            (click)="onHabitCellClick(habit.habitId, date.date)"
-            [title]="getCellTooltip(habit.habitId, date.date)">
-            <app-status-icon 
-              [status]="getCellStatus(habit.habitId, date.date)">
+
+          <div *ngFor="let habit of habits; trackBy: trackByHabitId" class="grid-cell habit-cell"
+            [class.clickable]="!date.isFuture" [class.disabled]="date.isFuture"
+            (click)="onHabitCellClick(habit.habitId, date.date)" [title]="getCellTooltip(habit.habitId, date.date)">
+            <app-status-icon [status]="getCellStatus(habit.habitId, date.date)">
             </app-status-icon>
           </div>
-          
-          <div 
-            class="grid-cell notes-cell"
-            [class.clickable]="!date.isFuture"
-            [class.disabled]="date.isFuture"
-            (click)="onNotesCellClick(date.date)"
-            [title]="getNotesTooltip(date.date)">
+
+          <div class="grid-cell notes-cell" [class.clickable]="!date.isFuture" [class.disabled]="date.isFuture"
+            (click)="onNotesCellClick(date.date)" [title]="getNotesTooltip(date.date)">
             <div class="notes-preview">
               {{ getNotesPreview(date.date) }}
             </div>
@@ -129,31 +110,19 @@
   </div>
 
   <!-- Notes Dialog -->
-  <app-note-dialog
-    [date]="selectedNoteDate"
-    [isVisible]="showNoteDialog"
-    [initialNote]="selectedNoteText"
-    (close)="onNoteDialogClose()"
-    (save)="onNoteDialogSave($event)">
+  <app-note-dialog [date]="selectedNoteDate" [isVisible]="showNoteDialog" [initialNote]="selectedNoteText"
+    (close)="onNoteDialogClose()" (save)="onNoteDialogSave($event)">
   </app-note-dialog>
 
   <!-- Habit Confirmation Dialog -->
-  <app-habit-confirmation
-    [isVisible]="showHabitConfirmation"
-    [habitName]="confirmationHabitName"
-    [date]="confirmationDate"
-    (confirm)="onHabitConfirmationConfirm()"
-    (cancel)="onHabitConfirmationCancel()"
+  <app-habit-confirmation [isVisible]="showHabitConfirmation" [habitName]="confirmationHabitName"
+    [date]="confirmationDate" (confirm)="onHabitConfirmationConfirm()" (cancel)="onHabitConfirmationCancel()"
     (close)="closeHabitConfirmation()">
   </app-habit-confirmation>
 
   <!-- Confirmation Dialog -->
-  <app-confirmation-dialog
-    [isVisible]="showConfirmationDialog"
-    [data]="confirmationDialogData"
-    [isLoading]="isRemovingHabit"
-    (confirm)="onConfirmationDialogConfirm()"
-    (cancel)="onConfirmationDialogCancel()"
+  <app-confirmation-dialog [isVisible]="showConfirmationDialog" [data]="confirmationDialogData"
+    [isLoading]="isRemovingHabit" (confirm)="onConfirmationDialogConfirm()" (cancel)="onConfirmationDialogCancel()"
     (close)="onConfirmationDialogClose()">
   </app-confirmation-dialog>
 
@@ -169,7 +138,7 @@
           <span class="close-icon">×</span>
         </button>
       </div>
-      
+
       <div class="modal-body">
         <!-- Challenge Update Form -->
         <div class="challenge-update-section">
@@ -177,32 +146,19 @@
           <form [formGroup]="challengeUpdateForm" class="challenge-update-form">
             <div class="form-group">
               <label for="challengeName">Challenge Name</label>
-              <input 
-                type="text" 
-                id="challengeName"
-                formControlName="name"
-                class="form-input"
+              <input type="text" id="challengeName" formControlName="name" class="form-input"
                 placeholder="Enter challenge name">
             </div>
-            
+
             <div class="form-row">
               <div class="form-group">
                 <label for="startDate">Start Date</label>
-                <input 
-                  type="date" 
-                  id="startDate"
-                  formControlName="startDate"
-                  class="form-input">
+                <input type="date" id="startDate" formControlName="startDate" class="form-input">
               </div>
-              
+
               <div class="form-group">
                 <label for="durationDays">Duration (Days)</label>
-                <input 
-                  type="number" 
-                  id="durationDays"
-                  formControlName="durationDays"
-                  class="form-input"
-                  min="1"
+                <input type="number" id="durationDays" formControlName="durationDays" class="form-input" min="1"
                   placeholder="Enter duration in days">
               </div>
             </div>
@@ -218,9 +174,7 @@
                 <span class="habit-name">{{ habit.habitName }}</span>
                 <span class="habit-description" *ngIf="habit.habitDescription">{{ habit.habitDescription }}</span>
               </div>
-              <button 
-                class="btn btn-danger btn-sm" 
-                (click)="removeHabit(habit.habitId, habit.habitName)"
+              <button class="btn btn-danger btn-sm" (click)="removeHabit(habit.habitId, habit.habitName)"
                 [disabled]="isRemovingHabit">
                 <span class="btn-icon">🗑</span>
                 Remove
@@ -243,10 +197,7 @@
           <div *ngIf="availableHabits.length > 0" class="available-habits-list">
             <div *ngFor="let habit of availableHabits" class="available-habit-item">
               <label class="habit-checkbox">
-                <input 
-                  type="checkbox" 
-                  [value]="habit.habitId"
-                  (change)="toggleHabitSelection(habit.habitId, $event)"
+                <input type="checkbox" [value]="habit.habitId" (change)="toggleHabitSelection(habit.habitId, $event)"
                   [disabled]="isUpdatingChallenge">
                 <div class="habit-content">
                   <span class="habit-name">{{ habit.name }}</span>
@@ -258,14 +209,12 @@
         </div>
 
       </div>
-      
+
       <div class="modal-footer">
         <button class="btn btn-outline" (click)="closeHabitSelectionDialog()" [disabled]="isUpdatingChallenge">
           Cancel
         </button>
-        <button 
-          class="btn btn-primary" 
-          (click)="updateChallenge()"
+        <button class="btn btn-primary" (click)="updateChallenge()"
           [disabled]="challengeUpdateForm.invalid || isUpdatingChallenge">
           <span class="btn-icon" *ngIf="!isUpdatingChallenge">💾</span>
           <span *ngIf="isUpdatingChallenge">Saving...</span>

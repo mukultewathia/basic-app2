@@ -1,0 +1,102 @@
+<div class="correlation-container">
+    <div class="header">
+        <div class="controls-container">
+            <div class="range-selector">
+                <select [value]="dateRangeType" (change)="onDateRangeTypeChange($event)">
+                    <option value="current_month">Current Month</option>
+                    <option value="previous_month">Previous Month</option>
+                    <option value="last_x_days">Last X Days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <input *ngIf="dateRangeType === 'last_x_days'" type="number" [value]="lastXDays"
+                    (change)="onLastXDaysChange($event)" min="1" class="days-input">
+            </div>
+
+            <div class="date-range-picker">
+                <div class="date-input">
+                    <label>Start</label>
+                    <input type="date" [value]="startDate" [max]="maxDate" (change)="onStartDateChange($event)">
+                </div>
+                <div class="date-input">
+                    <label>End</label>
+                    <input type="date" [value]="endDate" [max]="maxDate" (change)="onEndDateChange($event)">
+                </div>
+            </div>
+        </div>
+        <p class="subtitle">Analyze patterns between your selected habits.</p>
+    </div>
+
+    <div class="stats-section" *ngIf="habitStats.length > 0">
+        <h4>Activity Statistics</h4>
+        <div class="table-responsive">
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Habit</th>
+                        <th>Days Performed</th>
+                        <th>Total Days</th>
+                        <th>Completion Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let stat of habitStats">
+                        <td>{{ stat.name }}</td>
+                        <td>{{ stat.daysPerformed }}</td>
+                        <td>{{ stat.totalDays }}</td>
+                        <td>
+                            <div class="completion-cell">
+                                <div class="progress-bar">
+                                    <div class="progress" [style.width.%]="stat.completionRate"></div>
+                                </div>
+                                <span>{{ stat.completionRate | number:'1.0-1' }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="content" *ngIf="correlations.length > 0; else noData">
+        <div class="insights-grid">
+            <div class="insight-card" *ngFor="let result of correlations">
+                <div class="card-header">
+                    <div class="habit-pair">
+                        <span class="habit-tag">{{ result.habitAName }}</span>
+                        <span class="separator">↔</span>
+                        <span class="habit-tag">{{ result.habitBName }}</span>
+                    </div>
+                    <div class="phi-badge" [style.background-color]="getCorrelationColor(result.phiSmoothed)">
+                        {{ result.relationshipScore | number:'1.0-0' }}% {{ result.relationshipType }} Link
+                    </div>
+                </div>
+
+                <p class="summary">{{ result.summary }}</p>
+
+                <div class="stats-row">
+                    <div class="stat">
+                        <span class="label">Together</span>
+                        <span class="value">{{ result.stats.a }} days</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Confidence</span>
+                        <span class="value badge" [class]="result.confidence.toLowerCase().replace(' ', '-')">
+                            {{ result.confidence }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #noData>
+        <div class="empty-state">
+            <div class="icon">🔍</div>
+            <p>Select at least 2 habits to see correlations.</p>
+            <p class="sub-text" *ngIf="selectedHabits.length < 2">
+                Currently selected: {{ selectedHabits.length }}
+            </p>
+        </div>
+    </ng-template>
+</div>

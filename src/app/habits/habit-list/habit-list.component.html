@@ -1,6 +1,6 @@
 <div class="habit-list-container">
   <h2>Habits</h2>
-  
+
   <!-- Error message -->
   <div class="error-message" *ngIf="error" (click)="clearError()">
     <span>{{ error }}</span>
@@ -10,18 +10,9 @@
   <!-- Create new habit -->
   <div class="create-habit-section">
     <div class="input-group">
-      <input 
-        type="text" 
-        [(ngModel)]="newHabitName"
-        (keypress)="onKeyPress($event)"
-        placeholder="Enter habit name..."
-        class="habit-input"
-        [disabled]="loading"
-        aria-label="New habit name">
-      <button 
-        (click)="createHabit()"
-        [disabled]="!newHabitName.trim() || loading"
-        class="create-button"
+      <input type="text" [(ngModel)]="newHabitName" (keypress)="onKeyPress($event)" placeholder="Enter habit name..."
+        class="habit-input" [disabled]="loading" aria-label="New habit name">
+      <button (click)="createHabit()" [disabled]="!newHabitName.trim() || loading" class="create-button"
         aria-label="Create habit">
         <span *ngIf="!loading">Add</span>
         <span *ngIf="loading">Adding...</span>
@@ -30,8 +21,8 @@
   </div>
 
   <!-- Selection limit hint -->
-  <div class="selection-hint" *ngIf="getSelectedCount() >= 3">
-    <span>Maximum 3 habits selected</span>
+  <div class="selection-hint" *ngIf="!canSelectMoreHabits()">
+    <span>Maximum {{ MAX_SELECTED_HABITS }} habits selected</span>
   </div>
 
   <!-- Loading state -->
@@ -48,38 +39,26 @@
   <!-- Habits list -->
   <div class="habits-list" *ngIf="habits.length > 0">
     <div class="list-controls">
-      <button 
-        (click)="toggleShowAllHabits()" 
-        class="select-habits-button"
-        [class.active]="showAllHabits">
+      <button (click)="toggleShowAllHabits()" class="select-habits-button" [class.active]="showAllHabits">
         {{ showAllHabits ? 'Done' : 'Select habits' }}
       </button>
     </div>
 
-    <div 
-      class="habit-item"
-      *ngFor="let habit of visibleHabits; trackBy: trackByHabitId"
+    <div class="habit-item" *ngFor="let habit of visibleHabits; trackBy: trackByHabitId"
       [class.selected]="isHabitSelected(habit.id)">
-      
+
       <div class="habit-content">
         <label class="habit-checkbox" [title]="getCheckboxTooltip(habit.id)">
-          <input 
-            type="checkbox"
-            [checked]="isHabitSelected(habit.id)"
-            (change)="toggleHabitSelection(habit.id)"
+          <input type="checkbox" [checked]="isHabitSelected(habit.id)" (change)="toggleHabitSelection(habit.id)"
             [disabled]="!isHabitSelected(habit.id) && !canSelectMoreHabits()"
             [attr.aria-label]="'Select ' + habit.name">
           <span class="checkmark"></span>
         </label>
-        
+
         <span class="habit-name">{{ habit.name }}</span>
       </div>
-      
-      <button 
-        (click)="deleteHabit(habit.id)"
-        [disabled]="loading"
-        class="delete-button"
-        aria-label="Delete habit">
+
+      <button (click)="deleteHabit(habit.id)" [disabled]="loading" class="delete-button" aria-label="Delete habit">
         ×
       </button>
     </div>
@@ -87,6 +66,6 @@
 
   <!-- Selected count -->
   <div class="selected-count" *ngIf="getSelectedCount() > 0">
-    <span>{{ getSelectedCount() }} of 3 habits selected</span>
+    <span>{{ getSelectedCount() }} of {{ MAX_SELECTED_HABITS }} habits selected</span>
   </div>
 </div>

@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription, combineLatest } from 'rxjs';
-import { HabitListComponent } from './habit-list.component';
-import { CalendarMonthComponent } from './calendar-month.component';
+import { HabitListComponent } from './habit-list/habit-list.component';
+import { CalendarMonthComponent } from './calendar-month/calendar-month.component';
+import { HabitCorrelationComponent } from './habit-correlation/habit-correlation.component';
 import { HabitsStore } from './habits.store';
 import { HabitsApiService } from './habits-api.service';
 import { CalendarService } from './calendar.service';
@@ -12,14 +13,15 @@ import { AuthService } from '../auth/auth.service';
 @Component({
   selector: 'app-habits-page',
   standalone: true,
-  imports: [CommonModule, HabitListComponent, CalendarMonthComponent],
+  imports: [CommonModule, HabitListComponent, CalendarMonthComponent, HabitCorrelationComponent],
   templateUrl: './habits.page.html',
   styleUrls: ['./habits.page.scss']
 })
 export class HabitsPageComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   error: string | null = null;
-  
+  viewMode: 'calendar' | 'correlation' = 'calendar';
+
   private subscriptions = new Subscription();
   private lastLoadedKey: string = ''; // Cache key to prevent duplicate loads
 
@@ -28,13 +30,28 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
     private habitsApiService: HabitsApiService,
     private calendarService: CalendarService,
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.checkAuthenticationAndLoadData();
+    this.initializeSubscriptions(); // Keep this to set up subscriptions
+    this.loadHabits(); // Load habits initially
+
+    // Subscribe to query params to set view mode
+    this.route.queryParams.subscribe(params => {
+      const view = params['view'];
+      if (view === 'correlation') {
+        this.viewMode = 'correlation';
+      } else {
+        this.viewMode = 'calendar';
+      }
+    });
   }
 
+  // The checkAuthenticationAndLoadData method is no longer called directly from ngOnInit
+  // Its responsibilities are now split: initializeSubscriptions is called, and loadHabits is called.
+  // The authentication check might be handled by route guards or other mechanisms.
   private checkAuthenticationAndLoadData(): void {
     this.initializeSubscriptions();
     this.loadHabits();
@@ -83,10 +100,10 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
           createdAt: habitData.createdAt
         }));
         this.habitsStore.setHabits(habits);
-        
+
         // Auto-select the top 3 habits if no habits are currently selected
         this.habitsStore.autoSelectTopHabits();
-        
+
         this.habitsStore.setLoading(false);
       },
       error: (error) => {
@@ -110,7 +127,7 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
     if (this.lastLoadedKey === cacheKey) {
       return; // Already loaded this data
     }
-    
+
     // Get habit names for the selected habit IDs
     const selectedHabits = habitIds.map(id => {
       const habit = this.habitsStore.getHabitById(id);
@@ -133,7 +150,7 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
       next: (entries) => {
         // Group entries by habit ID
         const entriesByHabitId = new Map<number, any[]>();
-        
+
         habitIds.forEach((habitId: number) => {
           const habit = this.habitsStore.getHabitById(habitId);
           if (habit) {
@@ -156,7 +173,7 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
         entriesByHabitId.forEach((entries, habitId) => {
           this.habitsStore.setEntries(habitId, entries);
         });
-        
+
         // Update cache key
         this.lastLoadedKey = cacheKey;
       },
@@ -169,5 +186,23 @@ export class HabitsPageComponent implements OnInit, OnDestroy {
 
   clearError(): void {
     this.habitsStore.setError(null);
+  }
+
+  setViewMode(mode: 'calendar' | 'correlation'): void {
+    const queryParams: any = { view: mode };
+
+    if (mode === 'calendar') {
+      // Clear correlation params
+      queryParams.range = null;
+      queryParams.lastX = null;
+      queryParams.start = null;
+      queryParams.end = null;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: queryParams,
+      queryParamsHandling: 'merge'
+    });
   }
 }

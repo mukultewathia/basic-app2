@@ -1,8 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Note } from './models';
-import { NotesService } from './notes.service';
+import { Note } from '../models';
+import { NotesService } from '../notes.service';
 
 @Component({
   selector: 'app-notes-popup',
@@ -56,13 +56,13 @@ export class NotesPopupComponent implements OnInit, OnChanges {
   @Input() date: string = '';
   @Input() isVisible: boolean = false;
   @Output() close = new EventEmitter<void>();
-  @Output() save = new EventEmitter<{date: string, noteText: string}>();
+  @Output() save = new EventEmitter<{ date: string, noteText: string }>();
 
   noteText: string = '';
   isSaving: boolean = false;
   currentNote: Note | undefined;
 
-  constructor(private notesService: NotesService) {}
+  constructor(private notesService: NotesService) { }
 
   ngOnInit(): void {
     this.loadNote();
@@ -91,7 +91,7 @@ export class NotesPopupComponent implements OnInit, OnChanges {
 
   onSave(): void {
     if (this.isSaving) return;
-    
+
     this.isSaving = true;
     this.notesService.saveNote(this.date, this.noteText).subscribe({
       next: () => {

@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { API_URLS } from '../config/api.config';
 import { SnackbarService } from '../services/snackbar.service';
-import { 
+import {
   AllHabitData,
   HabitEntryResponse,
   HabitRequest,
@@ -21,17 +21,17 @@ export class HabitsApiService {
   constructor(
     private http: HttpClient,
     private snackbarService: SnackbarService
-  ) {}
+  ) { }
 
   /**
-   * Get all habits for a user
+   * Get all habits (only the names and ids) for a user
    */
   getHabits(habitName?: string): Observable<AllHabitData[]> {
     let params = new HttpParams();
     if (habitName) {
       params = params.set('habitName', habitName);
     }
-    
+
     return this.http.get<AllHabitData[]>(API_URLS.HABITS.GET_ALL, { params });
   }
 
@@ -78,7 +78,7 @@ export class HabitsApiService {
   getEntries(habitNames: string[]): Observable<HabitEntryResponse[]> {
     let params = new HttpParams()
       .set('habitNames', habitNames.join(','));
-    
+
     return this.http.get<HabitEntryResponse[]>(API_URLS.HABITS.GET_ENTRIES, { params });
   }
 

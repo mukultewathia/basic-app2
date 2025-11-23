@@ -10,9 +10,19 @@
       <app-habit-list></app-habit-list>
     </div>
 
-    <!-- Right column: Calendar -->
+    <!-- Right column: Main Content -->
     <div class="habits-main">
-      <app-calendar-month></app-calendar-month>
+      <div class="view-controls">
+        <button class="view-btn" [class.active]="viewMode === 'calendar'" (click)="setViewMode('calendar')">
+          Calendar
+        </button>
+        <button class="view-btn" [class.active]="viewMode === 'correlation'" (click)="setViewMode('correlation')">
+          Understand your pattern
+        </button>
+      </div>
+
+      <app-calendar-month *ngIf="viewMode === 'calendar'"></app-calendar-month>
+      <app-habit-correlation *ngIf="viewMode === 'correlation'"></app-habit-correlation>
     </div>
   </div>
 
