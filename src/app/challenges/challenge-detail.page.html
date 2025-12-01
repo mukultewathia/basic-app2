@@ -67,6 +67,11 @@
           <span class="btn-icon">←</span>
           Back to Challenges
         </button>
+        <button class="btn btn-info btn-sm" (click)="analyzeChallenge()" [disabled]="isAnalyzing">
+          <span class="btn-icon" *ngIf="!isAnalyzing">🤖</span>
+          <span *ngIf="isAnalyzing">Analyzing...</span>
+          <span *ngIf="!isAnalyzing">AI Analysis</span>
+        </button>
       </div>
     </div>
 
@@ -220,6 +225,26 @@
           <span *ngIf="isUpdatingChallenge">Saving...</span>
           <span *ngIf="!isUpdatingChallenge">Save</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analysis Result Dialog -->
+  <div *ngIf="showAnalysisDialog" class="modal-overlay" (click)="closeAnalysisDialog()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h3>Challenge Analysis</h3>
+        </div>
+        <button class="close-btn" (click)="closeAnalysisDialog()">
+          <span class="close-icon">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="analysis-text" [innerHTML]="analysisResult"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" (click)="closeAnalysisDialog()">Close</button>
       </div>
     </div>
   </div>

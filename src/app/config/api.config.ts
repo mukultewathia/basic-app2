@@ -3,7 +3,7 @@ import { environment } from '../../environments/environment';
 export const API_CONFIG = {
   // Base URL for the backend API
   BASE_URL: environment.apiBaseUrl,
-  
+
   // Authentication endpoints
   LOGIN: '/api/auth/login',
   LOGOUT: '/api/auth/logout',
@@ -42,6 +42,11 @@ export const API_CONFIG = {
     REMOVE_HABIT: '/api/challenge/{challengeId}/deleteHabit/{habitId}',
     UPSERT_NOTE: '/api/challenge/{challengeId}/note',
     GET_NOTES: '/api/challenge/{challengeId}/notes'
+  },
+
+  // Agent service endpoints
+  AGENT: {
+    QUERY: '/api/agent/ask'
   }
 };
 
@@ -82,5 +87,8 @@ export const API_URLS = {
     REMOVE_HABIT: buildApiUrl(API_CONFIG.CHALLENGES.REMOVE_HABIT),
     UPSERT_NOTE: buildApiUrl(API_CONFIG.CHALLENGES.UPSERT_NOTE),
     GET_NOTES: buildApiUrl(API_CONFIG.CHALLENGES.GET_NOTES)
+  },
+  AGENT: {
+    QUERY: buildApiUrl(API_CONFIG.AGENT.QUERY)
   }
 }; 

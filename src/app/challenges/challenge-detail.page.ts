@@ -71,6 +71,11 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     icon: '⚠️'
   };
   pendingHabitRemoval: { habitId: number; habitName: string } | null = null;
+  
+  // Analysis state
+  showAnalysisDialog = false;
+  analysisResult = '';
+  isAnalyzing = false;
 
   constructor(
     private challengeService: ChallengeService,
@@ -634,5 +639,58 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
           this.isUpdatingChallenge = false;
         }
       });
+  }
+
+  analyzeChallenge(): void {
+    if (!this.challenge) return;
+
+    this.isAnalyzing = true;
+    const progress = this.getCompletionProgress();
+    const daysRemaining = progress.total - progress.completed;
+    
+    // Construct habit strings
+    const habitStrings = this.challenge.habitsInfo.map(habit => {
+      const performedCount = habit.habitEntries.filter(e => e.performed).length;
+      return `Habit name: ${habit.habitName}, Number of times habit was done: ${performedCount}`;
+    });
+
+    // Construct notes string
+    const notesStrings: string[] = [];
+    this.notes.forEach((note, date) => {
+      if (note.hasNote) {
+        notesStrings.push(`Date: ${date}, Note: ${note.noteText}`);
+      }
+    });
+
+    const query = `Please analyze the my challenge details for me. A challenge is a set of habits that I need to follow for a certain period of time.
+
+Days remaining: ${daysRemaining} Days elapsed: ${progress.completed} ${habitStrings.join(' ')}
+
+Additional notes by user for the challenge days:
+${notesStrings.join('\n')}`;
+
+    this.challengeService.analyzeChallenge(query)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isAnalyzing = false)
+      )
+      .subscribe({
+        next: (response) => {
+          // Format the response: replace newlines with <br> and **text** with <strong>text</strong>
+          this.analysisResult = response.response
+            .replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          this.showAnalysisDialog = true;
+        },
+        error: (error) => {
+          console.error('Analysis failed:', error);
+          // Error is already handled by service snackbar
+        }
+      });
+  }
+
+  closeAnalysisDialog(): void {
+    this.showAnalysisDialog = false;
+    this.analysisResult = '';
   }
 }

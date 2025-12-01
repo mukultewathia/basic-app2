@@ -244,4 +244,21 @@ export class ChallengeService {
       })
     );
   }
+  /**
+   * Analyze challenge using external API
+   */
+  analyzeChallenge(query: string): Observable<{ response: string }> {
+    const url = API_URLS.AGENT.QUERY;
+    const body = {
+      userQuery: query,
+    };
+    
+    return this.http.post<{ response: string }>(url, body).pipe(
+      catchError(error => {
+        console.error('Error analyzing challenge:', error);
+        this.snackbarService.showApiError('analyze challenge');
+        return throwError(() => error);
+      })
+    );
+  }
 }
