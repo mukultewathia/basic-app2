@@ -241,7 +241,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <p class="analysis-text" [innerHTML]="analysisResult"></p>
+        <markdown class="analysis-text" [data]="analysisResult"></markdown>
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary" (click)="closeAnalysisDialog()">Close</button>

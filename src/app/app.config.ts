@@ -1,6 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/http';
+import { provideMarkdown, MARKED_OPTIONS } from 'ngx-markdown';
 
 import { appRoutes } from './app.routes';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
@@ -13,6 +14,15 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([AuthInterceptor]),
       withFetch()
-    )
+    ),
+    provideMarkdown({
+      markedOptions: {
+        provide: MARKED_OPTIONS,
+        useValue: {
+          breaks: true,
+          gfm: true,
+        },
+      },
+    })
   ]
 };

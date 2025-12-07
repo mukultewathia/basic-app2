@@ -18,11 +18,12 @@ import { StatusIconComponent } from '../shared/ui/status-icon.component';
 import { NoteDialogComponent } from '../shared/ui/note-dialog.component';
 import { HabitConfirmationComponent } from './habit-confirmation.component';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../shared/ui/confirmation-dialog.component';
+import { MarkdownModule } from 'ngx-markdown';
 
 @Component({
   selector: 'app-challenge-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, StatusIconComponent, NoteDialogComponent, HabitConfirmationComponent, ConfirmationDialogComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, StatusIconComponent, NoteDialogComponent, HabitConfirmationComponent, ConfirmationDialogComponent, MarkdownModule],
   templateUrl: './challenge-detail.page.html',
   styleUrls: ['./challenge-detail.page.scss']
 })
@@ -546,6 +547,11 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     // Calculate days elapsed since challenge started (including current day)
     const startDate = new Date(this.challenge.startDate);
     const currentDate = new Date();
+
+    if(startDate > currentDate) {
+      return { completed: 0, total: totalDays, percentage: 0 };
+    }
+
     currentDate.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
     
     const endDate = new Date(this.challenge.endDate);
@@ -662,24 +668,19 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       }
     });
 
-    const query = `Please analyze the my challenge details for me. A challenge is a set of habits that I need to follow for a certain period of time.
+    const query = "Please analyze the my challenge details for me." + 
+    `Days remaining: ${daysRemaining} 
+     Days elapsed: ${progress.completed} ${habitStrings.join(' ')}
+     Additional notes by user for the challenge days: ${notesStrings.join('\n')}`;
 
-Days remaining: ${daysRemaining} Days elapsed: ${progress.completed} ${habitStrings.join(' ')}
-
-Additional notes by user for the challenge days:
-${notesStrings.join('\n')}`;
-
-    this.challengeService.analyzeChallenge(query)
+    this.challengeService.analyzeChallenge(query, this.challenge.challengeId)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => this.isAnalyzing = false)
       )
       .subscribe({
         next: (response) => {
-          // Format the response: replace newlines with <br> and **text** with <strong>text</strong>
-          this.analysisResult = response.response
-            .replace(/\n/g, '<br>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          this.analysisResult = response.response;
           this.showAnalysisDialog = true;
         },
         error: (error) => {

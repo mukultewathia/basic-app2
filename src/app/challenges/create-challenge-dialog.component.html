@@ -13,6 +13,8 @@
       </div>
       
       <form class="create-dialog-content" [formGroup]="challengeForm" (ngSubmit)="onSubmit()">
+        @switch (currentState) {
+          @case ('DETAILS') {
         <!-- Challenge Name -->
         <div class="form-group">
           <label for="challengeName" class="form-label">Challenge Name *</label>
@@ -28,99 +30,51 @@
           </div>
         </div>
 
-        <!-- Start Date -->
-        <div class="form-group">
-          <label for="startDate" class="form-label">Start Date *</label>
-          <input
-            id="startDate"
-            type="date"
-            formControlName="startDate"
-            class="form-input"
-            [class.error]="challengeForm.get('startDate')?.invalid && challengeForm.get('startDate')?.touched">
-          <div class="form-error" *ngIf="challengeForm.get('startDate')?.invalid && challengeForm.get('startDate')?.touched">
-            Start date is required
-          </div>
-        </div>
-
-        <!-- Duration -->
-        <div class="form-group">
-          <label for="durationDays" class="form-label">Duration (Days) *</label>
-          <input
-            id="durationDays"
-            type="number"
-            formControlName="durationDays"
-            class="form-input"
-            placeholder="Enter number of days"
-            min="1"
-            max="365"
-            [class.error]="challengeForm.get('durationDays')?.invalid && challengeForm.get('durationDays')?.touched">
-          <div class="form-error" *ngIf="challengeForm.get('durationDays')?.invalid && challengeForm.get('durationDays')?.touched">
-            Duration must be between 1 and 365 days
-          </div>
-        </div>
-
-        <!-- Create New Habit Section -->
-        <div class="form-group">
-          <div class="create-habit-section">
-            <div class="create-habit-header">
-              <label class="form-label">Create New Habit (Optional)</label>
-              <button 
-                type="button" 
-                class="btn btn-outline btn-sm"
-                (click)="toggleCreateHabit()">
-                {{ showCreateHabit ? 'Cancel' : '+ Add New Habit' }}
-              </button>
+        <div class="form-row">
+          <!-- Start Date -->
+          <div class="form-group form-group-inline">
+            <label for="startDate" class="form-label">Start Date *</label>
+            <input
+              id="startDate"
+              type="date"
+              formControlName="startDate"
+              class="form-input"
+              [class.error]="challengeForm.get('startDate')?.invalid && challengeForm.get('startDate')?.touched">
+            <div class="form-error" *ngIf="challengeForm.get('startDate')?.invalid && challengeForm.get('startDate')?.touched">
+              Start date is required
             </div>
-            
-            <div class="create-habit-form" *ngIf="showCreateHabit">
-              <div class="form-row">
-                <div class="form-group-inline">
-                  <label for="newHabitName" class="form-label">Habit Name *</label>
-                  <input
-                    id="newHabitName"
-                    type="text"
-                    formControlName="newHabitName"
-                    class="form-input"
-                    placeholder="Enter habit name"
-                    [class.error]="showCreateHabit && !challengeForm.get('newHabitName')?.value?.trim() && challengeForm.get('newHabitName')?.touched">
-                  <div class="form-error" *ngIf="showCreateHabit && !challengeForm.get('newHabitName')?.value?.trim() && challengeForm.get('newHabitName')?.touched">
-                    Habit name is required
-                  </div>
-                </div>
-                
-                <div class="form-group-inline">
-                  <label for="newHabitDescription" class="form-label">Description</label>
-                  <input
-                    id="newHabitDescription"
-                    type="text"
-                    formControlName="newHabitDescription"
-                    class="form-input"
-                    placeholder="Optional description">
-                </div>
-              </div>
-              
-              <div class="create-habit-actions">
-                <button 
-                  type="button" 
-                  class="btn btn-primary btn-sm"
-                  (click)="createNewHabit()"
-                  [disabled]="!challengeForm.get('newHabitName')?.value?.trim() || isCreatingHabit">
-                  {{ isCreatingHabit ? 'Creating...' : 'Create Habit' }}
-                </button>
-                <button 
-                  type="button" 
-                  class="btn btn-secondary btn-sm"
-                  (click)="cancelCreateHabit()">
-                  Cancel
-                </button>
-              </div>
+          </div>
+
+          <!-- Duration -->
+          <div class="form-group form-group-inline">
+            <label for="durationDays" class="form-label">Duration (Days) *</label>
+            <input
+              id="durationDays"
+              type="number"
+              formControlName="durationDays"
+              class="form-input"
+              placeholder="Enter number of days"
+              min="1"
+              max="365"
+              [class.error]="challengeForm.get('durationDays')?.invalid && challengeForm.get('durationDays')?.touched">
+            <div class="form-error" *ngIf="challengeForm.get('durationDays')?.invalid && challengeForm.get('durationDays')?.touched">
+              Duration must be between 1 and 365 days
             </div>
           </div>
         </div>
+
 
         <!-- Habits Selection -->
         <div class="form-group">
-          <label class="form-label">Select Habits *</label>
+          <div class="section-header">
+            <label class="form-label">Select Habits *</label>
+            <button 
+              type="button" 
+              class="btn-link"
+              (click)="goToAddHabit()">
+              + Add New Habit
+            </button>
+          </div>
           <div class="habits-container">
             <div class="habits-list" *ngIf="availableHabits.length > 0; else noHabits">
               <div 
@@ -131,7 +85,6 @@
                 <input 
                   type="checkbox" 
                   [checked]="isHabitSelected(habit.habitId)"
-                  (change)="toggleHabitSelection(habit.habitId)"
                   class="habit-checkbox">
                 <span class="habit-name">{{ habit.name }}</span>
                 <span class="habit-description" *ngIf="habit.description">{{ habit.description }}</span>
@@ -149,32 +102,103 @@
           </div>
         </div>
 
-        <!-- Challenge Preview -->
-        <div class="challenge-preview" *ngIf="challengeForm.valid">
-          <h4>Challenge Preview</h4>
-          <div class="preview-content">
-            <p><strong>Name:</strong> {{ challengeForm.get('name')?.value }}</p>
-            <p><strong>Start Date:</strong> {{ formatDate(challengeForm.get('startDate')?.value) }}</p>
-            <p><strong>End Date:</strong> {{ getEndDate() }}</p>
-            <p><strong>Duration:</strong> {{ challengeForm.get('durationDays')?.value }} days</p>
-            <p><strong>Habits:</strong> {{ getSelectedHabitsText() }}</p>
-          </div>
-        </div>
+    <!-- Create New Habit Section -->
+          }
+        
+          @case ('ADD_HABIT') {
+            <div class="create-habit-section">
+              <div class="create-habit-form">
+                <div class="form-row">
+                  <div class="form-group-inline">
+                    <label for="newHabitName" class="form-label">Habit Name *</label>
+                    <input
+                      id="newHabitName"
+                      type="text"
+                      formControlName="newHabitName"
+                      class="form-input"
+                      placeholder="Enter habit name"
+                      [class.error]="currentState === 'ADD_HABIT' && !challengeForm.get('newHabitName')?.value?.trim() && challengeForm.get('newHabitName')?.touched">
+                    <div class="form-error" *ngIf="currentState === 'ADD_HABIT' && !challengeForm.get('newHabitName')?.value?.trim() && challengeForm.get('newHabitName')?.touched">
+                      Habit name is required
+                    </div>
+                  </div>
+                  
+                  <div class="form-group-inline">
+                    <label for="newHabitDescription" class="form-label">Description</label>
+                    <input
+                      id="newHabitDescription"
+                      type="text"
+                      formControlName="newHabitDescription"
+                      class="form-input"
+                      placeholder="Optional description">
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          @case ('PREVIEW') {
+            <!-- Challenge Preview -->
+            <div class="challenge-preview">
+              <h4>Challenge Preview</h4>
+              <div class="preview-content">
+                <p><strong>Name:</strong> {{ challengeForm.get('name')?.value }}</p>
+                <p><strong>Start Date:</strong> {{ formatDate(challengeForm.get('startDate')?.value) }}</p>
+                <p><strong>End Date:</strong> {{ getEndDate() }}</p>
+                <p><strong>Duration:</strong> {{ challengeForm.get('durationDays')?.value }} days</p>
+                <p><strong>Habits:</strong> {{ getSelectedHabitsText() }}</p>
+              </div>
+            </div>
+          }
+        }
       </form>
       
       <div class="create-dialog-actions">
-        <button 
-          class="btn btn-secondary" 
-          (click)="onClose()"
-          [disabled]="isCreating">
-          Cancel
-        </button>
-        <button 
-          class="btn btn-primary" 
-          (click)="onSubmit()"
-          [disabled]="challengeForm.invalid || isCreating">
-          {{ isCreating ? 'Creating...' : 'Create Challenge' }}
-        </button>
+        @switch (currentState) {
+          @case ('DETAILS') {
+            <button 
+              class="btn btn-secondary" 
+              (click)="onClose()"
+              [disabled]="isCreating">
+              Cancel
+            </button>
+            <button 
+              class="btn btn-primary" 
+              (click)="onPreview()"
+              [disabled]="challengeForm.invalid || isCreating">
+              Preview and confirm
+            </button>
+          }
+          @case ('ADD_HABIT') {
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="cancelAddHabit()">
+              Cancel
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-primary" 
+              (click)="createNewHabit()"
+              [disabled]="!challengeForm.get('newHabitName')?.value?.trim() || isCreatingHabit">
+              {{ isCreatingHabit ? 'Creating...' : 'Create Habit' }}
+            </button>
+          }
+          @case ('PREVIEW') {
+            <button 
+              class="btn btn-secondary" 
+              (click)="onEdit()"
+              [disabled]="isCreating">
+              Edit
+            </button>
+            <button 
+              class="btn btn-primary" 
+              (click)="onSubmit()"
+              [disabled]="isCreating">
+              {{ isCreating ? 'Creating...' : 'Create Challenge' }}
+            </button>
+          }
+        }
       </div>
     </div>
   </div>

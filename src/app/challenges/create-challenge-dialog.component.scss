@@ -221,6 +221,32 @@
   font-size: 12px;
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  .form-label {
+    margin-bottom: 0;
+  }
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  
+  &:hover {
+    text-decoration: underline;
+    color: #2563eb;
+  }
+}
+
 .habit-new {
   background-color: #10b981;
   color: white;

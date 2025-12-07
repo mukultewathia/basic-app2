@@ -7,6 +7,8 @@ import { CreateChallengeData } from './models';
 import { HabitsApiService } from '../habits/habits-api.service';
 import { AllHabitData, CreateHabitDto } from '../habits/models';
 
+export type DialogState = 'DETAILS' | 'ADD_HABIT' | 'PREVIEW';
+
 @Component({
   selector: 'app-create-challenge-dialog',
   standalone: true,
@@ -22,7 +24,7 @@ export class CreateChallengeDialogComponent implements OnInit, OnDestroy {
   challengeForm: FormGroup;
   availableHabits: AllHabitData[] = [];
   isCreating: boolean = false;
-  showCreateHabit: boolean = false;
+  currentState: DialogState = 'DETAILS';
   isCreatingHabit: boolean = false;
   newlyCreatedHabitIds: number[] = [];
   private destroy$ = new Subject<void>();
@@ -97,13 +99,41 @@ export class CreateChallengeDialogComponent implements OnInit, OnDestroy {
     }
   }
 
+  onPreview(): void {
+    if (this.challengeForm.valid) {
+      this.currentState = 'PREVIEW';
+    } else {
+      this.challengeForm.markAllAsTouched();
+    }
+  }
+
+  onEdit(): void {
+    this.currentState = 'DETAILS';
+  }
+
+  goToAddHabit(): void {
+    this.currentState = 'ADD_HABIT';
+  }
+
+  cancelAddHabit(): void {
+    this.currentState = 'DETAILS';
+    this.challengeForm.patchValue({ 
+      newHabitName: '', 
+      newHabitDescription: '' 
+    });
+    this.challengeForm.get('newHabitName')?.markAsUntouched();
+  }
+
   toggleHabitSelection(habitId: number): void {
+    console.log('Toggling habit selection:', habitId);
     const currentHabitIds = this.challengeForm.get('habitIds')?.value || [];
     const index = currentHabitIds.indexOf(habitId);
     
     if (index > -1) {
+      console.log('Removing habit:', habitId);
       currentHabitIds.splice(index, 1);
     } else {
+      console.log('Adding habit:', habitId);
       currentHabitIds.push(habitId);
     }
     
@@ -159,13 +189,6 @@ export class CreateChallengeDialogComponent implements OnInit, OnDestroy {
     this.isCreating = creating;
   }
 
-  toggleCreateHabit(): void {
-    this.showCreateHabit = !this.showCreateHabit;
-    if (!this.showCreateHabit) {
-      this.cancelCreateHabit();
-    }
-  }
-
   createNewHabit(): void {
     const newHabitName = this.challengeForm.get('newHabitName')?.value;
     if (!newHabitName || newHabitName.trim() === '' || this.isCreatingHabit) {
@@ -203,27 +226,18 @@ export class CreateChallengeDialogComponent implements OnInit, OnDestroy {
           currentHabitIds.push(createdHabit.habitId);
           this.challengeForm.patchValue({ habitIds: currentHabitIds });
           
-          // Reset form and hide create habit section
+          // Reset form and return to details
           this.challengeForm.patchValue({ 
             newHabitName: '', 
             newHabitDescription: '' 
           });
-          this.showCreateHabit = false;
+          this.currentState = 'DETAILS';
         },
         error: (error) => {
           console.error('Failed to create habit:', error);
           // TODO: Show error toast
         }
       });
-  }
-
-  cancelCreateHabit(): void {
-    this.showCreateHabit = false;
-    this.challengeForm.patchValue({ 
-      newHabitName: '', 
-      newHabitDescription: '' 
-    });
-    this.challengeForm.get('newHabitName')?.markAsUntouched();
   }
 
   isNewlyCreatedHabit(habitId: number): boolean {

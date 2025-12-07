@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil, finalize } from 'rxjs';
 import { ChallengeService } from './challenge.service';
 import { ChallengeSummary, ChallengeScheduleStatus, CreateChallengeData } from './models';
+import { challengeBase } from './challenges.routes';
 import { StatusIconComponent } from '../shared/ui/status-icon.component';
 import { CreateChallengeDialogComponent } from './create-challenge-dialog.component';
 
@@ -35,8 +36,8 @@ export class ChallengesPageComponent implements OnInit, OnDestroy {
   
   tabs = [
     { id: 'active' as ChallengeScheduleStatus, label: 'Active', statusIcon: 'active' as const },
-    { id: 'expired' as ChallengeScheduleStatus, label: 'Expired', statusIcon: 'expired' as const },
-    { id: 'scheduled' as ChallengeScheduleStatus, label: 'Scheduled', statusIcon: 'scheduled' as const }
+    { id: 'scheduled' as ChallengeScheduleStatus, label: 'Scheduled', statusIcon: 'scheduled' as const },
+    { id: 'expired' as ChallengeScheduleStatus, label: 'Expired', statusIcon: 'expired' as const }
   ];
 
   tabCounts: Record<string, number> = {
@@ -185,7 +186,7 @@ export class ChallengesPageComponent implements OnInit, OnDestroy {
           this.loadChallenges();
           
           // Navigate to the new challenge detail page
-          this.router.navigate(['/challenges', createdChallenge.challengeId]);
+          this.router.navigate([challengeBase.path, createdChallenge.challengeId]);
         },
         error: (error) => {
           console.error('Failed to create challenge:', error);

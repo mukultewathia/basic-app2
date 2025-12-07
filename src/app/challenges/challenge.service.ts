@@ -14,6 +14,7 @@ import {
   CreateChallengeRequest,
   CreateChallengeResponse
 } from './models';
+import { AgentService } from '../services/agent.service';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +22,8 @@ import {
 export class ChallengeService {
   constructor(
     private http: HttpClient,
-    private snackbarService: SnackbarService
+    private snackbarService: SnackbarService,
+    private agentService: AgentService
   ) {}
 
   /**
@@ -247,13 +249,11 @@ export class ChallengeService {
   /**
    * Analyze challenge using external API
    */
-  analyzeChallenge(query: string): Observable<{ response: string }> {
-    const url = API_URLS.AGENT.QUERY;
-    const body = {
-      userQuery: query,
-    };
-    
-    return this.http.post<{ response: string }>(url, body).pipe(
+  analyzeChallenge(userQuery: string, challengeId?: number): Observable<{ response: string }> {
+    return this.agentService.askAgent({
+      userQuery,
+      challengeId
+    }).pipe(
       catchError(error => {
         console.error('Error analyzing challenge:', error);
         this.snackbarService.showApiError('analyze challenge');
