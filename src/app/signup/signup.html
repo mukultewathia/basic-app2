@@ -3,8 +3,10 @@
 </div>
 
 <div class="signup-container">
-  <h2>Create a new account</h2>
-  <form #f="ngForm" (ngSubmit)="signupUser(f)">
+  <h2>{{ step === 1 ? 'Create a new account' : 'Verify Your Email' }}</h2>
+  
+  <!-- STEP 1: Request OTP -->
+  <form *ngIf="step === 1" #step1Form="ngForm" (ngSubmit)="requestOtp(step1Form)">
     <div class="form-group">
       <label>Username</label>
       <input
@@ -18,6 +20,41 @@
       />
     </div>
     <div class="form-group">
+      <label>Email</label>
+      <input
+        name="email"
+        ngModel
+        required
+        type="email"
+        placeholder="Enter your email address"
+      />
+    </div>
+    <button type="submit" [disabled]="!step1Form.valid || isLoading">
+      {{ isLoading ? 'Sending OTP...' : 'Send OTP' }}
+    </button>
+  </form>
+
+  <!-- STEP 2: Verify OTP & Password -->
+  <form *ngIf="step === 2" #step2Form="ngForm" (ngSubmit)="verifyAndSignup(step2Form)">
+    <div class="summary-group">
+      <p class="summary-text">Code sent to: <strong>{{ emailData }}</strong></p>
+      <a href="javascript:void(0)" (click)="goToStep1()" class="change-link">Change email</a>
+    </div>
+
+    <div class="form-group">
+      <label>4-Digit Verification Code</label>
+      <input
+        name="otp"
+        ngModel
+        required
+        maxlength="4"
+        pattern="[0-9]{4}"
+        type="text"
+        placeholder="Enter 4-digit OTP"
+      />
+    </div>
+
+    <div class="form-group">
       <label>Password</label>
       <input
         name="password"
@@ -25,11 +62,13 @@
         required
         type="password"
         placeholder="Choose a password"
-        (input)="onPasswordInput($event)"
-        (keypress)="onKeyPress($event)"
       />
     </div>
-    <button type="submit" [disabled]="!f.valid">Sign Up</button>
+
+    <button type="submit" [disabled]="!step2Form.valid || isLoading">
+      {{ isLoading ? 'Creating Account...' : 'Verify & Sign Up' }}
+    </button>
   </form>
+
   <p *ngIf="message" [class]="isError ? 'error-message' : 'message'">{{ message }}</p>
 </div>

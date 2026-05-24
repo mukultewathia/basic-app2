@@ -7,6 +7,7 @@ import { API_URLS } from '../config/api.config';
 interface LoginResponse {
   userId: number;
   username: string;
+  email?: string;
   accessToken: string;
 }
 
@@ -28,6 +29,10 @@ export class AuthService {
 
   get username(): string | null {
     return this.user?.username || null;
+  }
+
+  get email(): string | null {
+    return this.user?.email || null;
   }
 
   get isLoggedIn(): boolean {
@@ -53,6 +58,7 @@ export class AuthService {
     this.user = {
       userId: userData.id || userData.userId,
       username: userData.username,
+      email: userData.email,
       accessToken: userData.accessToken
     };
     this.userLoggedIn = true;
@@ -137,8 +143,16 @@ export class AuthService {
     );
   }
 
-  signup(username: string, password: string): Observable<any> {
-    return this.http.post<any>(API_URLS.SIGNUP, { username, password }).pipe(
+  requestSignupOtp(username: string, email: string): Observable<any> {
+    return this.http.post<any>(API_URLS.SIGNUP_OTP, { username, email }).pipe(
+      tap((response) => {
+        console.log('AuthService - Request OTP successful', response);
+      })
+    );
+  }
+
+  signup(username: string, email: string, password: string, otp: string): Observable<any> {
+    return this.http.post<any>(API_URLS.SIGNUP, { username, email, password, otp }).pipe(
       tap((user) => {
         console.log('AuthService - Signup successful', user);
       })

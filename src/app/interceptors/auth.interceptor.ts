@@ -35,8 +35,8 @@ export function AuthInterceptor(
         if (isMafiaRoute) {
           console.log('AuthInterceptor - On mafia route, not redirecting to login');
         } 
-        else if (isOnSignupPage && isMeEndpoint) {
-          console.log('AuthInterceptor - On signup page and /me endpoint failed, not redirecting to login');
+        else if (isOnSignupPage && (isMeEndpoint || request.url.includes('/signup'))) {
+          console.log('AuthInterceptor - On signup page and /me or /signup endpoint failed, not redirecting to login');
         } 
         else if (error.error?.code === 'TOKEN_EXPIRED') {
           console.log('AuthInterceptor - Token expired, attempting refresh');
