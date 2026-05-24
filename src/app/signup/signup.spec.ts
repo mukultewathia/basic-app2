@@ -24,5 +24,11 @@ describe('Signup', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should show error message for invalid email in requestOtp', () => {
+    component.requestOtp({ value: { username: 'testuser', email: 'invalid-email' } });
+    expect(component.message).toBe('Please enter a valid email address.');
+    expect(component.isError).toBeTrue();
+  });
 });
 

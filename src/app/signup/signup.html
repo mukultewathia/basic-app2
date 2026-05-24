@@ -23,11 +23,17 @@
       <label>Email</label>
       <input
         name="email"
+        #emailInput="ngModel"
         ngModel
         required
+        email
         type="email"
         placeholder="Enter your email address"
       />
+      <div *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)" class="field-error">
+        <span *ngIf="emailInput.errors?.['required']">Email is required.</span>
+        <span *ngIf="emailInput.errors?.['email']">Please enter a valid email address.</span>
+      </div>
     </div>
     <button type="submit" [disabled]="!step1Form.valid || isLoading">
       {{ isLoading ? 'Sending OTP...' : 'Send OTP' }}

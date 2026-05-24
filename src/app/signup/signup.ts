@@ -54,6 +54,13 @@ export class Signup {
     const { username, email } = form.value;
     if (!username || !email) return;
 
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email.trim())) {
+      this.message = 'Please enter a valid email address.';
+      this.isError = true;
+      return;
+    }
+
     this.isLoading = true;
     this.message = null;
     this.isError = false;
