@@ -30,7 +30,7 @@ export class WeightComponent implements OnInit {
   readonly chartType = 'line';
 
   // View toggle properties
-  isWeeklyView = false;
+  currentViewMode: 'daily' | 'weekly' | 'monthly' = 'daily';
   
   // Modal properties
   showModal = false;
@@ -62,8 +62,10 @@ export class WeightComponent implements OnInit {
   }
 
   loadWeightData(): void {
-    if (this.isWeeklyView) {
+    if (this.currentViewMode === 'weekly') {
       this.loadWeeklyData();
+    } else if (this.currentViewMode === 'monthly') {
+      this.loadMonthlyData();
     } else {
       this.loadDailyData();
     }
@@ -89,6 +91,18 @@ export class WeightComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching weekly weight data:', error);
+      }
+    });
+  }
+
+  private loadMonthlyData(): void {
+    this.weightService.getMonthlyAverageWeight$().subscribe({
+      next: (monthlyWeights) => {
+        console.log('Monthly weight data received:', monthlyWeights);
+        this.updateMonthlyChartData(monthlyWeights);
+      },
+      error: (error) => {
+        console.error('Error fetching monthly weight data:', error);
       }
     });
   }
@@ -131,14 +145,38 @@ export class WeightComponent implements OnInit {
     };
   }
 
-  // Toggle between daily and weekly views
+  private updateMonthlyChartData(monthlyWeights: any[]): void {
+    // Transform the monthly weight data for the chart
+    const chartData = monthlyWeights.map(weight => ({
+      x: weight.monthStart.getTime(), // Convert Date to timestamp
+      y: weight.avgWeightKg
+    }));
+
+    this.data = {
+      datasets: [{
+        label: 'Monthly Average Weight (kg)',
+        data: chartData,
+        borderColor: 'rebeccapurple',
+        backgroundColor: 'rgba(102, 51, 153, 0.25)',
+        tension: 0.3,
+        pointRadius: 5
+      }]
+    };
+  }
+
+  // Toggle view modes
   switchToDailyView(): void {
-    this.isWeeklyView = false;
+    this.currentViewMode = 'daily';
     this.loadWeightData();
   }
 
   switchToWeeklyView(): void {
-    this.isWeeklyView = true;
+    this.currentViewMode = 'weekly';
+    this.loadWeightData();
+  }
+
+  switchToMonthlyView(): void {
+    this.currentViewMode = 'monthly';
     this.loadWeightData();
   }
 
@@ -216,8 +254,8 @@ export class WeightComponent implements OnInit {
         x: {
           type: 'time',
           time: {
-            unit: this.isWeeklyView ? 'week' : 'day',
-            tooltipFormat: this.isWeeklyView ? 'MMM d, yyyy' : 'MMM d, yyyy'
+            unit: this.currentViewMode === 'monthly' ? 'month' : (this.currentViewMode === 'weekly' ? 'week' : 'day'),
+            tooltipFormat: this.currentViewMode === 'monthly' ? 'MMM yyyy' : 'MMM d, yyyy'
           },
           title: { display: true, text: 'Date' }
         },

@@ -12,15 +12,21 @@
       <span class="toggle-label">View:</span>
       <button 
         class="toggle-btn" 
-        [class.active]="!isWeeklyView"
+        [class.active]="currentViewMode === 'daily'"
         (click)="switchToDailyView()">
         Daily
       </button>
       <button 
         class="toggle-btn" 
-        [class.active]="isWeeklyView"
+        [class.active]="currentViewMode === 'weekly'"
         (click)="switchToWeeklyView()">
         Weekly
+      </button>
+      <button 
+        class="toggle-btn" 
+        [class.active]="currentViewMode === 'monthly'"
+        (click)="switchToMonthlyView()">
+        Monthly
       </button>
     </div>
   </div>
