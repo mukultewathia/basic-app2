@@ -30,6 +30,17 @@
           </div>
         </div>
 
+        <!-- Challenge Description -->
+        <div class="form-group">
+          <label for="challengeDescription" class="form-label">Challenge Description</label>
+          <textarea
+            id="challengeDescription"
+            formControlName="challengeDescription"
+            class="form-input"
+            placeholder="What is the goal of this challenge? (optional)"
+            rows="3"></textarea>
+        </div>
+
         <div class="form-row">
           <!-- Start Date -->
           <div class="form-group form-group-inline">
@@ -143,6 +154,9 @@
               <h4>Challenge Preview</h4>
               <div class="preview-content">
                 <p><strong>Name:</strong> {{ challengeForm.get('name')?.value }}</p>
+                <p *ngIf="challengeForm.get('challengeDescription')?.value">
+                  <strong>Description:</strong> {{ challengeForm.get('challengeDescription')?.value }}
+                </p>
                 <p><strong>Start Date:</strong> {{ formatDate(challengeForm.get('startDate')?.value) }}</p>
                 <p><strong>End Date:</strong> {{ getEndDate() }}</p>
                 <p><strong>Duration:</strong> {{ challengeForm.get('durationDays')?.value }} days</p>

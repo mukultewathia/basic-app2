@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subject, takeUntil, finalize, exhaustMap, forkJoin } from 'rxjs';
 import { ChallengeService } from './challenge.service';
 import { HabitsApiService } from '../habits/habits-api.service';
@@ -23,7 +23,7 @@ import { MarkdownModule } from 'ngx-markdown';
 @Component({
   selector: 'app-challenge-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, StatusIconComponent, NoteDialogComponent, HabitConfirmationComponent, ConfirmationDialogComponent, MarkdownModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, StatusIconComponent, NoteDialogComponent, HabitConfirmationComponent, ConfirmationDialogComponent, MarkdownModule],
   templateUrl: './challenge-detail.page.html',
   styleUrls: ['./challenge-detail.page.scss']
 })
@@ -88,7 +88,8 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     this.challengeUpdateForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(1)]],
       startDate: ['', [Validators.required]],
-      durationDays: ['', [Validators.required, Validators.min(1)]]
+      durationDays: ['', [Validators.required, Validators.min(1)]],
+      challengeDescription: ['']
     });
   }
 
@@ -580,7 +581,8 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       this.challengeUpdateForm.patchValue({
         name: this.challenge.name,
         startDate: this.challenge.startDate,
-        durationDays: this.challenge.durationDays
+        durationDays: this.challenge.durationDays,
+        challengeDescription: this.challenge.challengeDescription || ''
       });
     }
   }
@@ -693,5 +695,38 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   closeAnalysisDialog(): void {
     this.showAnalysisDialog = false;
     this.analysisResult = '';
+  }
+
+  isEditingRetrospective = false;
+  retrospectiveText = '';
+
+  startEditingRetrospective(): void {
+    if (this.challenge) {
+      this.retrospectiveText = this.challenge.retrospective || '';
+      this.isEditingRetrospective = true;
+    }
+  }
+
+  cancelEditingRetrospective(): void {
+    this.isEditingRetrospective = false;
+    this.retrospectiveText = '';
+  }
+
+  saveRetrospective(): void {
+    if (!this.challenge) return;
+    
+    this.challengeService.update(this.challenge.challengeId, { retrospective: this.retrospectiveText })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (this.challenge) {
+            this.challenge.retrospective = this.retrospectiveText;
+          }
+          this.isEditingRetrospective = false;
+        },
+        error: (error) => {
+          console.error('Failed to save retrospective:', error);
+        }
+      });
   }
 }

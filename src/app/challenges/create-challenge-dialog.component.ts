@@ -38,6 +38,7 @@ export class CreateChallengeDialogComponent implements OnInit, OnDestroy {
       startDate: ['', Validators.required],
       durationDays: [30, [Validators.required, Validators.min(1), Validators.max(365)]],
       habitIds: [[], [Validators.required, Validators.minLength(1)]],
+      challengeDescription: [''],
       newHabitName: [''],
       newHabitDescription: ['']
     });
@@ -92,7 +93,8 @@ export class CreateChallengeDialogComponent implements OnInit, OnDestroy {
         name: formValue.name,
         habitIds: formValue.habitIds,
         startDate: formValue.startDate,
-        durationDays: formValue.durationDays
+        durationDays: formValue.durationDays,
+        challengeDescription: formValue.challengeDescription
       };
       
       this.create.emit(challengeData);

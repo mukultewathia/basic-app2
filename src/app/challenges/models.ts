@@ -38,6 +38,8 @@ export interface ChallengeDetailResponse {
   habitsInfo: HabitInfo[];
   createdAt: string; // ISO
   updatedAt: string; // ISO
+  challengeDescription?: string;
+  retrospective?: string;
 }
 
 // Frontend models for UI state
@@ -63,6 +65,8 @@ export interface ChallengeDetail {
   habitsInfo: HabitInfo[];
   createdAt: string;
   updatedAt: string;
+  challengeDescription?: string;
+  retrospective?: string;
 }
 
 // Grid data structures for detail view
@@ -142,6 +146,7 @@ export interface CreateChallengeRequest {
   habitIds: number[];
   startDate: string; // YYYY-MM-DD
   durationDays: number;
+  challengeDescription?: string;
 }
 
 export interface CreateChallengeResponse {
@@ -156,6 +161,8 @@ export interface CreateChallengeResponse {
   successPercent: number;
   createdAt: string;
   updatedAt: string;
+  challengeDescription?: string;
+  retrospective?: string;
 }
 
 // Dialog data types
@@ -164,6 +171,7 @@ export interface CreateChallengeData {
   habitIds: number[];
   startDate: string;
   durationDays: number;
+  challengeDescription?: string;
 }
 
 // Status display helpers

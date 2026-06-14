@@ -39,6 +39,9 @@
               {{ formatDate(challenge.startDate) }} - {{ formatDate(challenge.endDate) }}
             </span>
           </div>
+          <p class="challenge-description-text" *ngIf="challenge.challengeDescription">
+            {{ challenge.challengeDescription }}
+          </p>
         </div>
         <div class="challenge-status-section">
           <!-- Progress Bar -->
@@ -112,6 +115,40 @@
       </div>
     </div>
 
+    <!-- Retrospective Section -->
+    <div class="retrospective-section" *ngIf="challenge.scheduleStatus === 'expired'">
+      <div class="retrospective-header">
+        <h3>Post-Challenge Retrospective</h3>
+        <button class="btn btn-secondary btn-sm" *ngIf="!isEditingRetrospective" (click)="startEditingRetrospective()">
+          {{ challenge.retrospective ? 'Edit Retrospective' : 'Write Retrospective' }}
+        </button>
+      </div>
+
+      <div class="retrospective-content" *ngIf="!isEditingRetrospective">
+        <p class="retrospective-text" *ngIf="challenge.retrospective; else noRetrospective">
+          {{ challenge.retrospective }}
+        </p>
+        <ng-template #noRetrospective>
+          <div class="no-retrospective-placeholder" (click)="startEditingRetrospective()">
+            <span class="placeholder-icon">📝</span>
+            <p>How did the challenge go? Click here to write your retrospective reflection.</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="retrospective-editor" *ngIf="isEditingRetrospective">
+        <textarea 
+          [(ngModel)]="retrospectiveText" 
+          class="retrospective-textarea" 
+          placeholder="Reflect on your habits, successes, obstacles, and what you learned during this challenge..."
+          rows="5"></textarea>
+        <div class="editor-actions">
+          <button class="btn btn-outline btn-sm" (click)="cancelEditingRetrospective()">Cancel</button>
+          <button class="btn btn-primary btn-sm" (click)="saveRetrospective()">Save Retrospective</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Notes Dialog -->
@@ -166,6 +203,12 @@
                 <input type="number" id="durationDays" formControlName="durationDays" class="form-input" min="1"
                   placeholder="Enter duration in days">
               </div>
+            </div>
+
+            <div class="form-group">
+              <label for="modifyChallengeDescription">Challenge Description</label>
+              <textarea id="modifyChallengeDescription" formControlName="challengeDescription" class="form-input"
+                placeholder="Enter challenge description" rows="3"></textarea>
             </div>
           </form>
         </div>
