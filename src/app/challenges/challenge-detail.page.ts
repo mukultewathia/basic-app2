@@ -40,6 +40,7 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   selectedMobileDate: ChallengeGridDate | null = null;
   showGridModal = false;
   showMiniMatrix = false;
+  animatingHabits = new Map<number, string>();
   isHeaderExpanded = false;
   last7DaysDates: { date: string; label: string }[] = [];
   
@@ -276,6 +277,10 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     return currentIndex < this.dates.length - 1;
   }
 
+  getHabitSlideState(habitId: number): string | undefined {
+    return this.animatingHabits.get(habitId);
+  }
+
   toggleMobileHabit(habitId: number, performed: boolean): void {
     if (!this.selectedMobileDate) return;
     
@@ -286,13 +291,20 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     today.setHours(0, 0, 0, 0);
     if (cellDate > today) return;
 
-    const key = `${habitId}|${this.selectedMobileDate.date}`;
-    const cell = this.cells.get(key);
-    
-    // Only toggle if the status is different to avoid redundant API calls
-    if (!cell || cell.performed !== performed) {
-      this.toggleHabitEntry(habitId, this.selectedMobileDate.date, performed);
-    }
+    // Set animation target state to trigger sliding out
+    const targetState = performed ? 'completed' : 'missed';
+    this.animatingHabits.set(habitId, targetState);
+
+    // Defer state update to allow slide-out CSS transition to complete
+    setTimeout(() => {
+      const key = `${habitId}|${this.selectedMobileDate!.date}`;
+      const cell = this.cells.get(key);
+      
+      if (!cell || cell.performed !== performed) {
+        this.toggleHabitEntry(habitId, this.selectedMobileDate!.date, performed);
+      }
+      this.animatingHabits.delete(habitId);
+    }, 280);
   }
 
   openGridModal(): void {

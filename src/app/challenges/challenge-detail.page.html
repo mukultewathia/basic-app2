@@ -52,6 +52,8 @@
               <span class="toggle-text">History</span>
             </button>
             
+            <!-- Mobile backdrop for centered popup -->
+            <div *ngIf="showMiniMatrix" class="matrix-popup-backdrop" (click)="showMiniMatrix = false"></div>
             <!-- Last 7 Days Mini Matrix Local Popup (Normal Absolute Dropdown) -->
             <div *ngIf="showMiniMatrix" class="matrix-popup-card" (click)="$event.stopPropagation()">
               <div class="matrix-popup-header">
@@ -258,7 +260,10 @@
           <div class="habits-group pending-group" *ngIf="getPendingHabits().length > 0">
             <h4 class="group-header">⏳ Pending Action ({{ getPendingHabits().length }})</h4>
             <div class="mobile-habits-list">
-              <div *ngFor="let habit of getPendingHabits()" class="mobile-habit-card">
+              <div *ngFor="let habit of getPendingHabits(); trackBy: trackByHabitId" 
+                class="mobile-habit-card"
+                [class.sliding-out-completed]="getHabitSlideState(habit.habitId) === 'completed'"
+                [class.sliding-out-missed]="getHabitSlideState(habit.habitId) === 'missed'">
                 <div class="mobile-habit-info">
                   <h4 class="mobile-habit-name">{{ habit.habitName }}</h4>
                 </div>
@@ -287,7 +292,9 @@
           <div class="habits-group completed-group" *ngIf="getCompletedHabits().length > 0">
             <h4 class="group-header">✅ Completed ({{ getCompletedHabits().length }})</h4>
             <div class="mobile-habits-list">
-              <div *ngFor="let habit of getCompletedHabits()" class="mobile-habit-card">
+              <div *ngFor="let habit of getCompletedHabits(); trackBy: trackByHabitId" 
+                class="mobile-habit-card"
+                [class.sliding-out-missed]="getHabitSlideState(habit.habitId) === 'missed'">
                 <div class="mobile-habit-info">
                   <h4 class="mobile-habit-name">{{ habit.habitName }}</h4>
                 </div>
@@ -309,7 +316,9 @@
           <div class="habits-group missed-group" *ngIf="getMissedHabits().length > 0">
             <h4 class="group-header">❌ Missed ({{ getMissedHabits().length }})</h4>
             <div class="mobile-habits-list">
-              <div *ngFor="let habit of getMissedHabits()" class="mobile-habit-card">
+              <div *ngFor="let habit of getMissedHabits(); trackBy: trackByHabitId" 
+                class="mobile-habit-card"
+                [class.sliding-out-completed]="getHabitSlideState(habit.habitId) === 'completed'">
                 <div class="mobile-habit-info">
                   <h4 class="mobile-habit-name">{{ habit.habitName }}</h4>
                 </div>
