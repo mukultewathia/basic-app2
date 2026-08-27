@@ -24,7 +24,7 @@ export class NoteDialogComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['initialNote'] && changes['initialNote'].currentValue !== changes['initialNote'].previousValue) {
+    if (changes['isVisible']?.currentValue === true || changes['initialNote']) {
       this.noteText = this.initialNote;
     }
   }

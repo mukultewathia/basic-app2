@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -35,6 +35,13 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   habits: ChallengeGridHabit[] = [];
   cells: Map<string, ChallengeGridCell> = new Map();
   notes: Map<string, ChallengeGridNote> = new Map();
+
+  // Mobile navigation state
+  selectedMobileDate: ChallengeGridDate | null = null;
+  showGridModal = false;
+  showMiniMatrix = false;
+  isHeaderExpanded = false;
+  last7DaysDates: { date: string; label: string }[] = [];
   
   isLoading = false;
   error: string | null = null;
@@ -164,7 +171,175 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
         });
       });
     });
+
+    // Initialize or preserve selectedMobileDate for mobile view (checking URL query parameters first)
+    if (this.dates.length > 0) {
+      const urlDate = this.route.snapshot.queryParams['date'];
+      const matchingUrlDate = urlDate ? this.dates.find(d => d.date === urlDate) : null;
+      
+      if (matchingUrlDate) {
+        this.selectedMobileDate = matchingUrlDate;
+      } else {
+        const previouslySelectedDate = this.selectedMobileDate ? this.dates.find(d => d.date === this.selectedMobileDate?.date) : null;
+        if (previouslySelectedDate) {
+          this.selectedMobileDate = previouslySelectedDate;
+        } else {
+          const todayStr = this.formatDateLocal(new Date());
+          const todayDate = this.dates.find(d => d.date === todayStr);
+          if (todayDate) {
+            this.selectedMobileDate = todayDate;
+          } else {
+            // If today is not in the date range, default to last date if today is after the end,
+            // or first date if today is before the start.
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const firstDate = new Date(this.dates[0].date);
+            if (today < firstDate) {
+              this.selectedMobileDate = this.dates[0];
+            } else {
+              this.selectedMobileDate = this.dates[this.dates.length - 1];
+            }
+          }
+        }
+      }
+    }
+
+    // Pre-calculate last 7 days dates to prevent dynamic reference array generation in template bindings
+    this.last7DaysDates = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dateStr = this.formatDateLocal(d);
+      let label = '';
+      if (i === 0) {
+        label = 'Today';
+      } else {
+        label = d.toLocaleDateString('en-US', { weekday: 'short' });
+      }
+      this.last7DaysDates.push({ date: dateStr, label });
+    }
   }
+
+  formatDateLocal(d: Date): string {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  selectMobileDate(date: ChallengeGridDate): void {
+    this.selectedMobileDate = date;
+    
+    // Update URL query parameters silently
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { date: date.date },
+      queryParamsHandling: 'merge'
+    });
+
+    // Scroll the selected date card into view
+    setTimeout(() => {
+      const activeEl = document.querySelector('.mobile-date-card.active');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }, 50);
+  }
+
+  selectPreviousMobileDate(): void {
+    if (!this.selectedMobileDate || this.dates.length === 0) return;
+    const currentIndex = this.dates.findIndex(d => d.date === this.selectedMobileDate?.date);
+    if (currentIndex > 0) {
+      this.selectMobileDate(this.dates[currentIndex - 1]);
+    }
+  }
+
+  selectNextMobileDate(): void {
+    if (!this.selectedMobileDate || this.dates.length === 0) return;
+    const currentIndex = this.dates.findIndex(d => d.date === this.selectedMobileDate?.date);
+    if (currentIndex < this.dates.length - 1) {
+      this.selectMobileDate(this.dates[currentIndex + 1]);
+    }
+  }
+
+  hasPreviousMobileDate(): boolean {
+    if (!this.selectedMobileDate || this.dates.length === 0) return false;
+    const currentIndex = this.dates.findIndex(d => d.date === this.selectedMobileDate?.date);
+    return currentIndex > 0;
+  }
+
+  hasNextMobileDate(): boolean {
+    if (!this.selectedMobileDate || this.dates.length === 0) return false;
+    const currentIndex = this.dates.findIndex(d => d.date === this.selectedMobileDate?.date);
+    return currentIndex < this.dates.length - 1;
+  }
+
+  toggleMobileHabit(habitId: number, performed: boolean): void {
+    if (!this.selectedMobileDate) return;
+    
+    // Disable editing for future dates
+    const cellDate = new Date(this.selectedMobileDate.date);
+    cellDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (cellDate > today) return;
+
+    const key = `${habitId}|${this.selectedMobileDate.date}`;
+    const cell = this.cells.get(key);
+    
+    // Only toggle if the status is different to avoid redundant API calls
+    if (!cell || cell.performed !== performed) {
+      this.toggleHabitEntry(habitId, this.selectedMobileDate.date, performed);
+    }
+  }
+
+  openGridModal(): void {
+    this.showGridModal = true;
+  }
+
+  closeGridModal(): void {
+    this.showGridModal = false;
+  }
+
+  openMiniMatrix(): void {
+    this.showMiniMatrix = true;
+  }
+
+  closeMiniMatrix(): void {
+    this.showMiniMatrix = false;
+  }
+
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (this.showMiniMatrix && !target.closest('.history-popup-container')) {
+      this.showMiniMatrix = false;
+    }
+  }
+
+  toggleHeaderExpansion(): void {
+    this.isHeaderExpanded = !this.isHeaderExpanded;
+  }
+
+  getCompletedHabits(): ChallengeGridHabit[] {
+    if (!this.selectedMobileDate) return [];
+    return this.habits.filter(h => this.getCellStatus(h.habitId, this.selectedMobileDate!.date) === 'completed');
+  }
+
+  getMissedHabits(): ChallengeGridHabit[] {
+    if (!this.selectedMobileDate) return [];
+    return this.habits.filter(h => this.getCellStatus(h.habitId, this.selectedMobileDate!.date) === 'missed');
+  }
+
+  getPendingHabits(): ChallengeGridHabit[] {
+    if (!this.selectedMobileDate) return [];
+    return this.habits.filter(h => this.getCellStatus(h.habitId, this.selectedMobileDate!.date) === 'unknown');
+  }
+
+
 
   private loadExistingNotes(): void {
     if (!this.challenge) return;
@@ -195,13 +370,21 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
 
   private generateDateRange(startDate: string, endDate: string): ChallengeGridDate[] {
     const dates: ChallengeGridDate[] = [];
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    
+    // Parse start and end date strings locally to avoid UTC timezone offsets
+    const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+    const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+    const start = new Date(startYear, startMonth - 1, startDay);
+    const end = new Date(endYear, endMonth - 1, endDay);
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
+    // Cap the date range at today to prevent scrolling/selecting future dates
+    const effectiveEnd = end < today ? end : today;
+
+    for (let d = new Date(start); d <= effectiveEnd; d.setDate(d.getDate() + 1)) {
+      const dateStr = this.formatDateLocal(d);
       const cellDate = new Date(d);
       cellDate.setHours(0, 0, 0, 0);
       
