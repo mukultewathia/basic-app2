@@ -261,7 +261,6 @@
               <div *ngFor="let habit of getPendingHabits()" class="mobile-habit-card">
                 <div class="mobile-habit-info">
                   <h4 class="mobile-habit-name">{{ habit.habitName }}</h4>
-                  <p class="mobile-habit-desc" *ngIf="habit.habitDescription">{{ habit.habitDescription }}</p>
                 </div>
                 
                 <div class="mobile-toggle-group" [class.disabled]="selectedMobileDate.isFuture">
@@ -291,7 +290,6 @@
               <div *ngFor="let habit of getCompletedHabits()" class="mobile-habit-card">
                 <div class="mobile-habit-info">
                   <h4 class="mobile-habit-name">{{ habit.habitName }}</h4>
-                  <p class="mobile-habit-desc" *ngIf="habit.habitDescription">{{ habit.habitDescription }}</p>
                 </div>
                 
                 <div class="mobile-toggle-group" [class.disabled]="selectedMobileDate.isFuture">
@@ -314,7 +312,6 @@
               <div *ngFor="let habit of getMissedHabits()" class="mobile-habit-card">
                 <div class="mobile-habit-info">
                   <h4 class="mobile-habit-name">{{ habit.habitName }}</h4>
-                  <p class="mobile-habit-desc" *ngIf="habit.habitDescription">{{ habit.habitDescription }}</p>
                 </div>
                 
                 <div class="mobile-toggle-group" [class.disabled]="selectedMobileDate.isFuture">

@@ -106,6 +106,9 @@ export class SnackbarService {
   }
 
   showHabitEntrySaved(habitName: string, date: string, performed: boolean): void {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      return;
+    }
     const status = performed ? 'completed' : 'marked as missed';
     this.showSuccess(`${habitName} ${status} for ${date}!`);
   }

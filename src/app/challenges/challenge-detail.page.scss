@@ -121,14 +121,14 @@
 }
 
 .challenge-header-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  position: relative;
   width: 100%;
-  gap: 20px;
 }
 
 .header-action-buttons {
+  position: absolute;
+  top: 4px;
+  right: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -213,6 +213,7 @@
 }
 
 .challenge-title-section {
+  width: 100%;
 }
 
 .challenge-name {
@@ -223,6 +224,8 @@
   font-weight: 700;
   color: #ffffff;
   margin: 0 0 6px 0;
+  padding-right: 85px;
+  box-sizing: border-box;
 }
 
 .challenge-icon {
@@ -231,6 +234,8 @@
 
 .challenge-meta {
   margin-bottom: 8px;
+  padding-right: 85px;
+  box-sizing: border-box;
 }
 
 .date-range {
@@ -640,18 +645,17 @@
     padding: 16px;
   }
 
+  .challenge-content {
+    width: 100%;
+    gap: 16px;
+  }
+
   .challenge-header {
     align-items: stretch;
     padding: 16px;
   }
 
-  .challenge-header-summary {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-  }
+
 
   .header-toggle-btn, .history-trigger-btn {
     padding: 8px 12px;
