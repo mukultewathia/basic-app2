@@ -12,6 +12,46 @@
       </div>
       
       <div class="note-dialog-content">
+        <!-- Add Log Action Trigger & Expandable Section -->
+        <div class="add-log-container">
+          <button 
+            type="button" 
+            class="btn btn-add-log" 
+            (click)="toggleAddLog()">
+            <span>{{ showAddLog ? '➖ Close Log Form' : '➕ Add Log Entry' }}</span>
+          </button>
+
+          <div *ngIf="showAddLog" class="add-log-card">
+            <div class="log-input-header">
+              <label class="log-time-label">
+                <span>Time:</span>
+                <input type="time" [(ngModel)]="logTime" class="log-time-input">
+              </label>
+            </div>
+            <textarea
+              [(ngModel)]="logDraft"
+              placeholder="Type your log entry here..."
+              rows="2"
+              class="log-draft-textarea">
+            </textarea>
+            <div class="log-card-actions">
+              <button 
+                type="button" 
+                class="btn btn-secondary btn-sm" 
+                (click)="toggleAddLog()">
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-primary btn-sm" 
+                (click)="addLogToNote()"
+                [disabled]="!logDraft.trim()">
+                Prepend Log
+              </button>
+            </div>
+          </div>
+        </div>
+
         <textarea
           [(ngModel)]="noteText"
           placeholder="Add your notes for this day..."

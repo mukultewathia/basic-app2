@@ -195,17 +195,32 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     // Initialize or preserve selectedMobileDate for mobile view
     if (this.dates.length > 0) {
       const urlDate = this.route.snapshot.queryParams['date'];
-      const matchingUrlDate = urlDate ? this.dates.find(d => d.date === urlDate) : null;
-      
-      if (matchingUrlDate) {
-        this.selectedMobileDate = matchingUrlDate;
+      let targetDate: ChallengeGridDate | undefined;
+
+      if (urlDate) {
+        if (urlDate.toLowerCase() === 'today') {
+          const todayStr = this.formatDateLocal(new Date());
+          targetDate = this.dates.find(d => d.date === todayStr || d.isToday);
+          if (!targetDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const firstDate = new Date(this.dates[0].date);
+            targetDate = today < firstDate ? this.dates[0] : this.dates[this.dates.length - 1];
+          }
+        } else {
+          targetDate = this.dates.find(d => d.date === urlDate);
+        }
+      }
+
+      if (targetDate) {
+        this.selectedMobileDate = targetDate;
       } else {
         const previouslySelectedDate = this.selectedMobileDate ? this.dates.find(d => d.date === this.selectedMobileDate?.date) : null;
         if (previouslySelectedDate) {
           this.selectedMobileDate = previouslySelectedDate;
         } else {
           const todayStr = this.formatDateLocal(new Date());
-          const todayDate = this.dates.find(d => d.date === todayStr);
+          const todayDate = this.dates.find(d => d.date === todayStr || d.isToday);
           if (todayDate) {
             this.selectedMobileDate = todayDate;
           } else {
