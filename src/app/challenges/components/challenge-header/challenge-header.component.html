@@ -1,0 +1,137 @@
+<div *ngIf="challenge" class="challenge-header-wrapper">
+  <!-- Challenge Header Card -->
+  <div class="challenge-header" [class.header-expanded]="isHeaderExpanded">
+    <div class="challenge-header-summary">
+      <div class="challenge-title-section">
+        <h1 class="challenge-name">
+          <span class="challenge-icon">🎯</span>
+          {{ challenge.name }}
+        </h1>
+        <!-- Desktop Subdata (visible on desktop) -->
+        <div class="challenge-subdata desktop-subdata">
+          <div class="challenge-meta">
+            <span class="date-range">
+              <span class="meta-icon">📅</span>
+              {{ formatDate(challenge.startDate) }} - {{ formatDate(challenge.endDate) }}
+            </span>
+          </div>
+          <p class="challenge-description-text" *ngIf="challenge.challengeDescription">
+            {{ challenge.challengeDescription }}
+          </p>
+        </div>
+      </div>
+      
+      <!-- Header Actions: Toggle Info & 7 Days History Overlay -->
+      <div class="header-action-buttons">
+        <div class="history-popup-container">
+          <button class="history-trigger-btn" (click)="toggleMiniMatrix.emit(); $event.stopPropagation()" title="See Last 7 Days History">
+            <span class="btn-icon">📊</span>
+            <span class="toggle-text">History</span>
+          </button>
+          
+          <app-challenge-history-matrix
+            [isVisible]="showMiniMatrix"
+            [habits]="habits"
+            [last7DaysDates]="last7DaysDates"
+            [cells]="cells"
+            (close)="closeMiniMatrix.emit()">
+          </app-challenge-history-matrix>
+        </div>
+        
+        <button class="header-toggle-btn" (click)="toggleHeaderExpansion.emit()">
+          <span class="gear-icon">⚙️</span>
+          <span class="toggle-text">{{ isHeaderExpanded ? 'Hide Info' : 'Show Info' }}</span>
+          <span class="arrow-indicator">{{ isHeaderExpanded ? '▲' : '▼' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Collapsible details section (Opens on clicking Setting ⚙️ button) -->
+    <div class="collapsible-header-content" [class.expanded]="isHeaderExpanded">
+      <!-- Mobile Subdata (visible in expandable section on mobile) -->
+      <div class="challenge-subdata mobile-subdata">
+        <div class="challenge-meta">
+          <span class="date-range">
+            <span class="meta-icon">📅</span>
+            {{ formatDate(challenge.startDate) }} - {{ formatDate(challenge.endDate) }}
+          </span>
+        </div>
+        <p class="challenge-description-text" *ngIf="challenge.challengeDescription">
+          {{ challenge.challengeDescription }}
+        </p>
+      </div>
+
+      <div class="collapsible-inner-row">
+        <!-- Progress Bar Section -->
+        <div class="challenge-status-section">
+          <div class="progress-section">
+            <div class="progress-info">
+              <span class="progress-label">Challenge Progress</span>
+              <span class="progress-text">{{ getCompletionProgress().completed }} of {{ getCompletionProgress().total }}
+                days elapsed</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="getCompletionProgress().percentage">
+                </div>
+              </div>
+              <span class="progress-percentage">{{ getCompletionProgress().percentage }}%</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Actions Section -->
+        <div class="challenge-actions">
+          <button class="btn btn-primary btn-sm" (click)="modifyChallenge.emit()">
+            <span class="btn-icon">✏️</span>
+            Modify Challenge
+          </button>
+          <button class="btn btn-outline btn-sm" routerLink="/metrics-app/challenges">
+            <span class="btn-icon">←</span>
+            Back to Challenges
+          </button>
+          <button class="btn btn-info btn-sm" (click)="analyzeChallenge.emit()" [disabled]="isAnalyzing">
+            <span class="btn-icon" *ngIf="!isAnalyzing">🤖</span>
+            <span *ngIf="isAnalyzing">Analyzing...</span>
+            <span *ngIf="!isAnalyzing">AI Analysis</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Retrospective Section -->
+  <div class="retrospective-section" *ngIf="challenge.scheduleStatus === 'expired'">
+    <div class="retrospective-header">
+      <h3>Post-Challenge Retrospective</h3>
+      <button class="btn btn-secondary btn-sm" *ngIf="!isEditingRetrospective" (click)="startEditingRetrospective.emit()">
+        {{ challenge.retrospective ? 'Edit Retrospective' : 'Write Retrospective' }}
+      </button>
+    </div>
+
+    <div class="retrospective-content" *ngIf="!isEditingRetrospective">
+      <p class="retrospective-text" *ngIf="challenge.retrospective; else noRetrospective">
+        {{ challenge.retrospective }}
+      </p>
+      <ng-template #noRetrospective>
+        <div class="no-retrospective-placeholder" (click)="startEditingRetrospective.emit()">
+          <span class="placeholder-icon">📝</span>
+          <p>How did the challenge go? Click here to write your retrospective reflection.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="retrospective-editor" *ngIf="isEditingRetrospective">
+      <textarea 
+        [ngModel]="retrospectiveText" 
+        (ngModelChange)="onRetrospectiveTextChange($event)"
+        class="retrospective-textarea" 
+        placeholder="Reflect on your habits, successes, obstacles, and what you learned during this challenge..."
+        rows="5"></textarea>
+      <div class="editor-actions">
+        <button class="btn btn-outline btn-sm" (click)="cancelEditingRetrospective.emit()">Cancel</button>
+        <button class="btn btn-primary btn-sm" (click)="saveRetrospective.emit()">Save Retrospective</button>
+      </div>
+    </div>
+  </div>
+</div>

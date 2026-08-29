@@ -1,0 +1,49 @@
+<ng-container *ngIf="isVisible">
+  <!-- Mobile backdrop for centered popup -->
+  <div class="matrix-popup-backdrop" (click)="onClose($event)"></div>
+  
+  <!-- Last 7 Days Mini Matrix Card -->
+  <div class="matrix-popup-card" (click)="$event.stopPropagation()">
+    <div class="matrix-popup-header">
+      <div class="matrix-popup-title">
+        <h4>📊 Last 7 Days</h4>
+        <p>Status check (grey: pending, green: done, red: missed)</p>
+      </div>
+      <button class="matrix-popup-close-btn" (click)="onClose($event)" aria-label="Close">
+        <span class="close-icon">×</span>
+      </button>
+    </div>
+
+    <div class="matrix-popup-body">
+      <div class="mini-matrix-wrapper">
+        <div class="mini-matrix-body-scroll">
+          <table class="mini-matrix-table">
+            <thead>
+              <tr>
+                <th class="habit-col">Habit</th>
+                <th class="day-col" *ngFor="let day of last7DaysDates">
+                  {{ day.label }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let habit of habits">
+                <td class="habit-col" [title]="habit.habitName">
+                  {{ habit.habitName }}
+                </td>
+                <td *ngFor="let day of last7DaysDates">
+                  <div 
+                    class="mini-matrix-grid-cell"
+                    [class.cell-completed]="getCellStatus(habit.habitId, day.date) === 'completed'"
+                    [class.cell-missed]="getCellStatus(habit.habitId, day.date) === 'missed'"
+                    [class.cell-unknown]="getCellStatus(habit.habitId, day.date) === 'unknown'">
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

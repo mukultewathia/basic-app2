@@ -1,0 +1,102 @@
+<div *ngIf="isVisible" class="modal-overlay" (click)="close.emit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        <h3>Modify Challenge</h3>
+        <p class="modal-subtitle">Update challenge details and manage habits for "{{ challenge?.name }}"</p>
+      </div>
+      <button class="close-btn" (click)="close.emit()">
+        <span class="close-icon">×</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Challenge Update Form -->
+      <div class="challenge-update-section">
+        <h4>Challenge Details</h4>
+        <form [formGroup]="challengeUpdateForm" class="challenge-update-form">
+          <div class="form-group">
+            <label for="challengeName">Challenge Name</label>
+            <input type="text" id="challengeName" formControlName="name" class="form-input"
+              placeholder="Enter challenge name">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="startDate">Start Date</label>
+              <input type="date" id="startDate" formControlName="startDate" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="durationDays">Duration (Days)</label>
+              <input type="number" id="durationDays" formControlName="durationDays" class="form-input" min="1"
+                placeholder="Enter duration in days">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="modifyChallengeDescription">Challenge Description</label>
+            <textarea id="modifyChallengeDescription" formControlName="challengeDescription" class="form-input"
+              placeholder="Enter challenge description" rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <!-- Current Habits Section -->
+      <div class="current-habits-section">
+        <h4>Current Habits</h4>
+        <div class="current-habits-list" *ngIf="getCurrentHabitsCount() > 0">
+          <div *ngFor="let habit of challenge?.habitsInfo || []" class="current-habit-item">
+            <div class="habit-info">
+              <span class="habit-name">{{ habit.habitName }}</span>
+              <span class="habit-description" *ngIf="habit.habitDescription">{{ habit.habitDescription }}</span>
+            </div>
+            <button class="btn btn-danger btn-sm" (click)="removeHabit.emit({ habitId: habit.habitId, habitName: habit.habitName })"
+              [disabled]="isRemovingHabit">
+              <span class="btn-icon">🗑</span>
+              Remove
+            </button>
+          </div>
+        </div>
+        <div class="no-current-habits" *ngIf="getCurrentHabitsCount() === 0">
+          <span class="empty-icon">📝</span>
+          <p>No habits in this challenge yet</p>
+        </div>
+      </div>
+
+      <!-- Add Habits Section -->
+      <div class="add-habits-section">
+        <h4>Add New Habits</h4>
+        <div *ngIf="availableHabits.length === 0" class="no-available-habits">
+          <span class="empty-icon">📝</span>
+          <p>No available habits to add. <a routerLink="/metrics-app/habits">Create a new habit</a> first.</p>
+        </div>
+        <div *ngIf="availableHabits.length > 0" class="available-habits-list">
+          <div *ngFor="let habit of availableHabits" class="available-habit-item">
+            <label class="habit-checkbox">
+              <input type="checkbox" [value]="habit.habitId" (change)="toggleHabitSelection.emit({ habitId: habit.habitId, event: $event })"
+                [disabled]="isUpdatingChallenge">
+              <div class="habit-content">
+                <span class="habit-name">{{ habit.name }}</span>
+                <span class="habit-description" *ngIf="habit.description">{{ habit.description }}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="close.emit()" [disabled]="isUpdatingChallenge">
+        Cancel
+      </button>
+      <button class="btn btn-primary" (click)="updateChallenge.emit()"
+        [disabled]="challengeUpdateForm.invalid || isUpdatingChallenge">
+        <span class="btn-icon" *ngIf="!isUpdatingChallenge">💾</span>
+        <span *ngIf="isUpdatingChallenge">Saving...</span>
+        <span *ngIf="!isUpdatingChallenge">Save</span>
+      </button>
+    </div>
+  </div>
+</div>

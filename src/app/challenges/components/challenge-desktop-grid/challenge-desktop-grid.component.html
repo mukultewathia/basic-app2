@@ -1,0 +1,34 @@
+<div class="challenge-grid-container desktop-only-grid">
+  <div class="grid-header">
+    <div class="grid-cell date-header">Date</div>
+    <div *ngFor="let habit of habits" class="grid-cell habit-header" [title]="habit.habitDescription">
+      {{ habit.habitName }}
+    </div>
+    <div class="grid-cell notes-header">Notes</div>
+  </div>
+
+  <div class="grid-body">
+    <div *ngFor="let date of dates; trackBy: trackByDate" class="grid-row">
+      <div class="grid-cell date-cell">
+        <div class="date-info">
+          <span class="day-of-week">{{ date.dayOfWeek }}</span>
+          <span class="formatted-date">{{ date.formattedDate }}</span>
+        </div>
+      </div>
+
+      <div *ngFor="let habit of habits; trackBy: trackByHabitId" class="grid-cell habit-cell"
+        [class.clickable]="!date.isFuture" [class.disabled]="date.isFuture"
+        (click)="onHabitClick(habit.habitId, date.date)" [title]="getCellTooltip(habit.habitId, date.date)">
+        <app-status-icon [status]="getCellStatus(habit.habitId, date.date)">
+        </app-status-icon>
+      </div>
+
+      <div class="grid-cell notes-cell" [class.clickable]="!date.isFuture" [class.disabled]="date.isFuture"
+        (click)="onNotesClick(date.date)" [title]="getNotesTooltip(date.date)">
+        <div class="notes-preview">
+          {{ getNotesPreview(date.date) }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

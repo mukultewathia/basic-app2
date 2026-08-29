@@ -1,0 +1,456 @@
+.challenge-header-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.challenge-header {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 0;
+  padding: 0 0 16px 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  width: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.challenge-header-summary {
+  position: relative;
+  width: 100%;
+}
+
+.header-action-buttons {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-toggle-btn, .history-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(51, 65, 85, 0.8);
+    color: #ffffff;
+    border-color: #3b82f6;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.header-toggle-btn {
+  .gear-icon {
+    font-size: 14px;
+    transition: transform 0.3s ease;
+  }
+  
+  .arrow-indicator {
+    font-size: 10px;
+    opacity: 0.7;
+  }
+
+  &:hover {
+    .gear-icon {
+      transform: rotate(45deg);
+    }
+  }
+}
+
+.history-trigger-btn {
+  .btn-icon {
+    font-size: 14px;
+  }
+}
+
+.history-popup-container {
+  position: relative;
+  display: inline-block;
+}
+
+.collapsible-header-content {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+
+  &.expanded {
+    max-height: 500px;
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(51, 65, 85, 0.5));
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+  }
+}
+
+.collapsible-inner-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.challenge-title-section {
+  width: 100%;
+}
+
+.challenge-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px 0;
+  padding-right: 90px;
+  box-sizing: border-box;
+}
+
+.challenge-icon {
+  font-size: 24px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  padding: 6px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.challenge-subdata {
+  &.desktop-subdata {
+    display: block;
+
+    @media (max-width: 768px) {
+      display: none !important;
+    }
+  }
+
+  &.mobile-subdata {
+    display: none;
+
+    @media (max-width: 768px) {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    }
+  }
+}
+
+.challenge-meta {
+  margin-bottom: 4px;
+}
+
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.meta-icon {
+  font-size: 16px;
+}
+
+.challenge-description-text {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 4px 0 0 0;
+  line-height: 1.4;
+}
+
+.challenge-status-section {
+  flex: 1;
+}
+
+.progress-section {
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.progress-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background-color: rgba(148, 163, 184, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+}
+
+.progress-percentage {
+  font-size: 12px;
+  font-weight: 600;
+  color: #10b981;
+  min-width: 40px;
+  text-align: right;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.challenge-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+}
+
+.btn-secondary, .btn-outline {
+  background-color: rgba(51, 65, 85, 0.4);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+
+  &:hover {
+    background-color: rgba(51, 65, 85, 0.7);
+    color: #ffffff;
+    border-color: #3b82f6;
+  }
+}
+
+.btn-info {
+  background-color: #0284c7;
+  color: white;
+
+  &:hover {
+    background-color: #0369a1;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-icon {
+  margin-right: 6px;
+}
+
+/* Retrospective Styling */
+.retrospective-section {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.retrospective-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+}
+
+.retrospective-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.no-retrospective-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed rgba(148, 163, 184, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #3b82f6;
+    background: rgba(51, 65, 85, 0.3);
+  }
+
+  .placeholder-icon {
+    font-size: 24px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #94a3b8;
+  }
+}
+
+.retrospective-textarea {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+}
+
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+  .challenge-name {
+    font-size: 22px;
+  }
+
+  .header-toggle-btn, .history-trigger-btn {
+    padding: 8px 12px;
+    
+    .toggle-text {
+      display: none;
+    }
+  }
+
+  .collapsible-inner-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+
+  .challenge-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 6px;
+    
+    .btn {
+      flex: 1;
+      padding: 8px 4px;
+      font-size: 11px;
+      justify-content: center;
+      white-space: nowrap;
+      
+      .btn-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+}

@@ -1,0 +1,153 @@
+<div class="mobile-challenges-view" *ngIf="selectedMobileDate">
+  <!-- Date Picker Strip -->
+  <div class="date-strip-section">
+    <button class="nav-arrow-btn" (click)="selectPreviousDate.emit()" [disabled]="!hasPreviousMobileDate()">
+      ‹
+    </button>
+    
+    <div class="mobile-date-strip">
+      <div 
+        *ngFor="let date of dates" 
+        class="mobile-date-card" 
+        [class.active]="selectedMobileDate.date === date.date"
+        [class.today]="date.isToday"
+        [class.future]="date.isFuture"
+        (click)="selectDate.emit(date)">
+        <span class="card-weekday">{{ date.isToday ? 'Today' : date.dayOfWeek }}</span>
+        <span class="card-day-num">{{ date.date.substring(8, 10) }}</span>
+        
+        <!-- Mini Status Dots representing habits completion -->
+        <div class="card-status-dots">
+          <span 
+            *ngFor="let habit of habits" 
+            class="status-dot" 
+            [class.completed]="getCellStatus(habit.habitId, date.date) === 'completed'"
+            [class.missed]="getCellStatus(habit.habitId, date.date) === 'missed'"
+            [class.unknown]="getCellStatus(habit.habitId, date.date) === 'unknown'">
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <button class="nav-arrow-btn" (click)="selectNextDate.emit()" [disabled]="!hasNextMobileDate()">
+      ›
+    </button>
+  </div>
+
+  <!-- Focused Day Habits List -->
+  <div class="mobile-habits-section">
+    <!-- Selected Date Header -->
+    <div class="mobile-section-header">
+      <h3 class="selected-date-label">
+        📅 {{ formatDate(selectedMobileDate.date) }}
+      </h3>
+      <span class="future-badge" *ngIf="selectedMobileDate.isFuture">Future Date (Read-Only)</span>
+    </div>
+
+    <!-- Day Journal / Reflection Notes Card (Notebook Style) -->
+    <div class="mobile-notes-section" (click)="notesClick.emit(selectedMobileDate.date)">
+      <div class="mobile-notes-header">
+        <div class="journal-title-tag">
+          <span class="journal-icon">📝</span>
+          <h4>Day Journal & Notes</h4>
+        </div>
+        <span class="notes-edit-hint">✏️ Tap to edit</span>
+      </div>
+      <div class="mobile-notes-body">
+        <p class="mobile-notes-content" [class.empty]="!notesText">
+          {{ notesText || 'No reflection logged for this date. Tap to record thoughts, mood, or daily context...' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Habits Checklist divided into 3 sections -->
+    <div class="mobile-habits-container" *ngIf="habits.length > 0">
+
+      <!-- Section 1: Pending Action -->
+      <div class="habits-group pending-group" *ngIf="getPendingHabits().length > 0">
+        <h4 class="group-header">⏳ Pending Action ({{ getPendingHabits().length }})</h4>
+        <div class="mobile-habits-list">
+          <div *ngFor="let habit of getPendingHabits(); trackBy: trackByHabitId" 
+            class="mobile-habit-card"
+            [class.sliding-out-completed]="getHabitSlideState(habit.habitId) === 'completed'"
+            [class.sliding-out-missed]="getHabitSlideState(habit.habitId) === 'missed'">
+            <div class="mobile-habit-info">
+              <h4 class="mobile-habit-name">{{ habit.habitName }}</h4>
+            </div>
+            
+            <div class="mobile-toggle-group" [class.disabled]="selectedMobileDate.isFuture">
+              <button 
+                class="toggle-btn completed-btn half-width"
+                [disabled]="selectedMobileDate.isFuture"
+                (click)="toggleHabit.emit({ habitId: habit.habitId, performed: true })"
+                title="Completed">
+                <span class="btn-icon">✔</span>
+              </button>
+              <button 
+                class="toggle-btn missed-btn half-width"
+                [disabled]="selectedMobileDate.isFuture"
+                (click)="toggleHabit.emit({ habitId: habit.habitId, performed: false })"
+                title="Missed">
+                <span class="btn-icon">✖</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Completed -->
+      <div class="habits-group completed-group" *ngIf="getCompletedHabits().length > 0">
+        <h4 class="group-header">✅ Completed ({{ getCompletedHabits().length }})</h4>
+        <div class="mobile-habits-list">
+          <div *ngFor="let habit of getCompletedHabits(); trackBy: trackByHabitId" 
+            class="mobile-habit-card"
+            [class.sliding-out-missed]="getHabitSlideState(habit.habitId) === 'missed'">
+            <div class="mobile-habit-info">
+              <h4 class="mobile-habit-name">{{ habit.habitName }}</h4>
+            </div>
+            
+            <div class="mobile-toggle-group" [class.disabled]="selectedMobileDate.isFuture">
+              <button 
+                class="toggle-btn completed-btn full-width active"
+                [disabled]="selectedMobileDate.isFuture"
+                (click)="toggleHabit.emit({ habitId: habit.habitId, performed: false })"
+                title="Toggle to Missed">
+                <span class="btn-icon">✔</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Missed -->
+      <div class="habits-group missed-group" *ngIf="getMissedHabits().length > 0">
+        <h4 class="group-header">❌ Missed ({{ getMissedHabits().length }})</h4>
+        <div class="mobile-habits-list">
+          <div *ngFor="let habit of getMissedHabits(); trackBy: trackByHabitId" 
+            class="mobile-habit-card"
+            [class.sliding-out-completed]="getHabitSlideState(habit.habitId) === 'completed'">
+            <div class="mobile-habit-info">
+              <h4 class="mobile-habit-name">{{ habit.habitName }}</h4>
+            </div>
+            
+            <div class="mobile-toggle-group" [class.disabled]="selectedMobileDate.isFuture">
+              <button 
+                class="toggle-btn missed-btn full-width active"
+                [disabled]="selectedMobileDate.isFuture"
+                (click)="toggleHabit.emit({ habitId: habit.habitId, performed: true })"
+                title="Toggle to Completed">
+                <span class="btn-icon">✖</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="no-habits-mobile" *ngIf="habits.length === 0">
+      <p>No habits added to this challenge yet.</p>
+    </div>
+
+  </div>
+</div>

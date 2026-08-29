@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Subject, takeUntil, finalize, exhaustMap, forkJoin } from 'rxjs';
+import { Subject, takeUntil, finalize, forkJoin } from 'rxjs';
 import { ChallengeService } from './challenge.service';
 import { HabitsApiService } from '../habits/habits-api.service';
 import { 
@@ -10,20 +10,37 @@ import {
   ChallengeGridDate, 
   ChallengeGridHabit, 
   ChallengeGridCell,
-  ChallengeGridNote,
-  ChallengeScheduleStatus 
+  ChallengeGridNote 
 } from './models';
 import { AllHabitData } from '../habits/models';
-import { StatusIconComponent } from '../shared/ui/status-icon.component';
 import { NoteDialogComponent } from '../shared/ui/note-dialog.component';
 import { HabitConfirmationComponent } from './habit-confirmation.component';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../shared/ui/confirmation-dialog.component';
 import { MarkdownModule } from 'ngx-markdown';
 
+// Modular Sub-components
+import { ChallengeHeaderComponent } from './components/challenge-header/challenge-header.component';
+import { ChallengeDesktopGridComponent } from './components/challenge-desktop-grid/challenge-desktop-grid.component';
+import { ChallengeMobileViewComponent } from './components/challenge-mobile-view/challenge-mobile-view.component';
+import { ChallengeModifyDialogComponent } from './components/challenge-modify-dialog/challenge-modify-dialog.component';
+
 @Component({
   selector: 'app-challenge-detail-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, StatusIconComponent, NoteDialogComponent, HabitConfirmationComponent, ConfirmationDialogComponent, MarkdownModule],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    ReactiveFormsModule, 
+    FormsModule, 
+    NoteDialogComponent, 
+    HabitConfirmationComponent, 
+    ConfirmationDialogComponent, 
+    MarkdownModule,
+    ChallengeHeaderComponent,
+    ChallengeDesktopGridComponent,
+    ChallengeMobileViewComponent,
+    ChallengeModifyDialogComponent
+  ],
   templateUrl: './challenge-detail.page.html',
   styleUrls: ['./challenge-detail.page.scss']
 })
@@ -38,7 +55,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
 
   // Mobile navigation state
   selectedMobileDate: ChallengeGridDate | null = null;
-  showGridModal = false;
   showMiniMatrix = false;
   animatingHabits = new Map<number, string>();
   isHeaderExpanded = false;
@@ -63,7 +79,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   availableHabits: AllHabitData[] = [];
   selectedHabitIds: number[] = [];
   isRemovingHabit = false;
-  isHabitsSectionExpanded = false;
 
   // Challenge update properties
   challengeUpdateForm: FormGroup;
@@ -85,6 +100,10 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   showAnalysisDialog = false;
   analysisResult = '';
   isAnalyzing = false;
+
+  // Retrospective state
+  isEditingRetrospective = false;
+  retrospectiveText = '';
 
   constructor(
     private challengeService: ChallengeService,
@@ -173,7 +192,7 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       });
     });
 
-    // Initialize or preserve selectedMobileDate for mobile view (checking URL query parameters first)
+    // Initialize or preserve selectedMobileDate for mobile view
     if (this.dates.length > 0) {
       const urlDate = this.route.snapshot.queryParams['date'];
       const matchingUrlDate = urlDate ? this.dates.find(d => d.date === urlDate) : null;
@@ -190,8 +209,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
           if (todayDate) {
             this.selectedMobileDate = todayDate;
           } else {
-            // If today is not in the date range, default to last date if today is after the end,
-            // or first date if today is before the start.
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const firstDate = new Date(this.dates[0].date);
@@ -205,7 +222,7 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Pre-calculate last 7 days dates to prevent dynamic reference array generation in template bindings
+    // Pre-calculate last 7 days dates
     this.last7DaysDates = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -213,12 +230,7 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
       const dateStr = this.formatDateLocal(d);
-      let label = '';
-      if (i === 0) {
-        label = 'Today';
-      } else {
-        label = d.toLocaleDateString('en-US', { weekday: 'short' });
-      }
+      const label = i === 0 ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short' });
       this.last7DaysDates.push({ date: dateStr, label });
     }
   }
@@ -233,14 +245,12 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   selectMobileDate(date: ChallengeGridDate): void {
     this.selectedMobileDate = date;
     
-    // Update URL query parameters silently
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { date: date.date },
       queryParamsHandling: 'merge'
     });
 
-    // Scroll the selected date card into view
     setTimeout(() => {
       const activeEl = document.querySelector('.mobile-date-card.active');
       if (activeEl) {
@@ -265,37 +275,19 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  hasPreviousMobileDate(): boolean {
-    if (!this.selectedMobileDate || this.dates.length === 0) return false;
-    const currentIndex = this.dates.findIndex(d => d.date === this.selectedMobileDate?.date);
-    return currentIndex > 0;
-  }
-
-  hasNextMobileDate(): boolean {
-    if (!this.selectedMobileDate || this.dates.length === 0) return false;
-    const currentIndex = this.dates.findIndex(d => d.date === this.selectedMobileDate?.date);
-    return currentIndex < this.dates.length - 1;
-  }
-
-  getHabitSlideState(habitId: number): string | undefined {
-    return this.animatingHabits.get(habitId);
-  }
-
-  toggleMobileHabit(habitId: number, performed: boolean): void {
+  toggleMobileHabit(event: { habitId: number; performed: boolean }): void {
+    const { habitId, performed } = event;
     if (!this.selectedMobileDate) return;
     
-    // Disable editing for future dates
     const cellDate = new Date(this.selectedMobileDate.date);
     cellDate.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (cellDate > today) return;
 
-    // Set animation target state to trigger sliding out
     const targetState = performed ? 'completed' : 'missed';
     this.animatingHabits.set(habitId, targetState);
 
-    // Defer state update to allow slide-out CSS transition to complete
     setTimeout(() => {
       const key = `${habitId}|${this.selectedMobileDate!.date}`;
       const cell = this.cells.get(key);
@@ -306,23 +298,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       this.animatingHabits.delete(habitId);
     }, 280);
   }
-
-  openGridModal(): void {
-    this.showGridModal = true;
-  }
-
-  closeGridModal(): void {
-    this.showGridModal = false;
-  }
-
-  openMiniMatrix(): void {
-    this.showMiniMatrix = true;
-  }
-
-  closeMiniMatrix(): void {
-    this.showMiniMatrix = false;
-  }
-
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -336,22 +311,13 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     this.isHeaderExpanded = !this.isHeaderExpanded;
   }
 
-  getCompletedHabits(): ChallengeGridHabit[] {
-    if (!this.selectedMobileDate) return [];
-    return this.habits.filter(h => this.getCellStatus(h.habitId, this.selectedMobileDate!.date) === 'completed');
+  toggleMiniMatrix(): void {
+    this.showMiniMatrix = !this.showMiniMatrix;
   }
 
-  getMissedHabits(): ChallengeGridHabit[] {
-    if (!this.selectedMobileDate) return [];
-    return this.habits.filter(h => this.getCellStatus(h.habitId, this.selectedMobileDate!.date) === 'missed');
+  closeMiniMatrix(): void {
+    this.showMiniMatrix = false;
   }
-
-  getPendingHabits(): ChallengeGridHabit[] {
-    if (!this.selectedMobileDate) return [];
-    return this.habits.filter(h => this.getCellStatus(h.habitId, this.selectedMobileDate!.date) === 'unknown');
-  }
-
-
 
   private loadExistingNotes(): void {
     if (!this.challenge) return;
@@ -360,10 +326,7 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (notes) => {
-          // Clear existing notes
           this.notes.clear();
-          
-          // Populate notes map
           notes.forEach(note => {
             const gridNote: ChallengeGridNote = {
               date: note.noteDate,
@@ -375,15 +338,12 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to load existing notes:', error);
-          // Don't show error to user as this is not critical functionality
         }
       });
   }
 
   private generateDateRange(startDate: string, endDate: string): ChallengeGridDate[] {
     const dates: ChallengeGridDate[] = [];
-    
-    // Parse start and end date strings locally to avoid UTC timezone offsets
     const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
     const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
     const start = new Date(startYear, startMonth - 1, startDay);
@@ -391,8 +351,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // Cap the date range at today to prevent scrolling/selecting future dates
     const effectiveEnd = end < today ? end : today;
 
     for (let d = new Date(start); d <= effectiveEnd; d.setDate(d.getDate() + 1)) {
@@ -421,28 +379,23 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     return dates;
   }
 
-  onHabitCellClick(habitId: number, date: string): void {
-    // Check if date is in the future
+  onHabitCellClick(event: { habitId: number; date: string }): void {
+    const { habitId, date } = event;
     const cellDate = new Date(date);
     cellDate.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    if (cellDate > today) {
-      // Disable editing for future dates
-      return;
-    }
+    if (cellDate > today) return;
 
     const key = `${habitId}|${date}`;
     const cell = this.cells.get(key);
     
     if (!cell || cell.performed === null) {
-      // No entry exists or status is unknown, show confirmation
       this.showHabitConfirmationDialog(habitId, date);
       return;
     }
 
-    // Toggle existing entry
     this.toggleHabitEntry(habitId, date, !cell.performed);
   }
 
@@ -461,12 +414,8 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     const existingCell = this.cells.get(key);
     const habit = this.habits.find(h => h.habitId === habitId);
     
-    if (!habit) {
-      console.error('Habit not found for ID:', habitId);
-      return;
-    }
+    if (!habit) return;
 
-    // Optimistic update
     const newCell: ChallengeGridCell = {
       habitId,
       date,
@@ -476,12 +425,10 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     };
     this.cells.set(key, newCell);
 
-    // Call service with real backend API
     this.challengeService.saveHabitEntry(this.challenge!.challengeId, habitId, date, performed, habit.habitName)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Update with real entry ID if provided
           if (response.entryId) {
             newCell.entryId = response.entryId;
             this.cells.set(key, newCell);
@@ -489,20 +436,18 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to save habit entry:', error);
-          // Revert optimistic update
           if (existingCell) {
             this.cells.set(key, existingCell);
           } else {
             this.cells.delete(key);
           }
-          // TODO: Show error toast
         }
       });
   }
 
   onNotesCellClick(date: string): void {
     this.selectedNoteDate = date;
-    this.selectedNoteText = this.getNotesText(date);
+    this.selectedNoteText = this.notes.get(date)?.noteText || '';
     this.showNoteDialog = true;
   }
 
@@ -513,7 +458,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   }
 
   onNoteDialogSave(event: {date: string, noteText: string}): void {
-    // Optimistic update
     const note: ChallengeGridNote = {
       date: event.date,
       noteText: event.noteText,
@@ -521,13 +465,10 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     };
     this.notes.set(event.date, note);
 
-    // Call service
     this.challengeService.saveNote(this.challenge!.challengeId, event.date, event.noteText)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('Note saved successfully:', response);
-          // Update the note with the response data (includes ID, timestamps, etc.)
           const updatedNote: ChallengeGridNote = {
             date: response.noteDate,
             noteText: response.noteText,
@@ -537,90 +478,11 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to save note:', error);
-          // Revert optimistic update
           this.notes.delete(event.date);
-          // TODO: Show error toast
         }
       });
 
     this.onNoteDialogClose();
-  }
-
-  getCellStatus(habitId: number, date: string): 'completed' | 'missed' | 'unknown' {
-    const key = `${habitId}|${date}`;
-    const cell = this.cells.get(key);
-    
-    if (!cell || cell.performed === null) {
-      return 'unknown';
-    }
-    
-    return cell.performed ? 'completed' : 'missed';
-  }
-
-  getCellTooltip(habitId: number, date: string): string {
-    const habit = this.habits.find(h => h.habitId === habitId);
-    const status = this.getCellStatus(habitId, date);
-    const statusText = status === 'completed' ? 'Completed' : 
-                      status === 'missed' ? 'Missed' : 'Unknown';
-    
-    return `${habit?.habitName || 'Habit'} - ${statusText}`;
-  }
-
-  getNotesText(date: string): string {
-    return this.notes.get(date)?.noteText || '';
-  }
-
-  getNotesPreview(date: string): string {
-    const note = this.notes.get(date);
-    if (!note || !note.hasNote) {
-      return 'Click to add notes';
-    }
-    
-    return note.noteText;
-  }
-
-  getNotesTooltip(date: string): string {
-    const note = this.notes.get(date);
-    if (!note || !note.hasNote) {
-      return 'Add notes for this day';
-    }
-    
-    return `Edit notes: ${note.noteText}`;
-  }
-
-  getStatusIcon(status: ChallengeScheduleStatus): 'active' | 'expired' | 'scheduled' | 'deleted' {
-    return status;
-  }
-
-  getStatusLabel(status: ChallengeScheduleStatus): string {
-    switch (status) {
-      case 'active':
-        return 'Active';
-      case 'expired':
-        return 'Expired';
-      case 'scheduled':
-        return 'Scheduled';
-      case 'deleted':
-        return 'Deleted';
-      default:
-        return 'Unknown';
-    }
-  }
-
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  }
-
-  trackByDate(index: number, date: ChallengeGridDate): string {
-    return date.date;
-  }
-
-  trackByHabitId(index: number, habit: ChallengeGridHabit): number {
-    return habit.habitId;
   }
 
   // Habit confirmation dialog methods
@@ -642,10 +504,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   }
 
   // Habit management methods
-  toggleHabitsSection(): void {
-    this.isHabitsSectionExpanded = !this.isHabitsSectionExpanded;
-  }
-
   closeHabitSelectionDialog(): void {
     this.showHabitSelectionDialog = false;
     this.availableHabits = [];
@@ -657,7 +515,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (habits) => {
-          // Filter out habits that are already in the challenge
           const challengeHabitIds = this.challenge?.habitsInfo?.map(h => h.habitId) || [];
           this.availableHabits = habits.filter(habit => !challengeHabitIds.includes(habit.habitId));
         },
@@ -668,25 +525,23 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  toggleHabitSelection(habitId: number, event: Event): void {
-    const target = event.target as HTMLInputElement;
+  toggleHabitSelection(event: { habitId: number; event: Event }): void {
+    const target = event.event.target as HTMLInputElement;
     if (target.checked) {
-      this.selectedHabitIds.push(habitId);
+      this.selectedHabitIds.push(event.habitId);
     } else {
-      this.selectedHabitIds = this.selectedHabitIds.filter(id => id !== habitId);
+      this.selectedHabitIds = this.selectedHabitIds.filter(id => id !== event.habitId);
     }
   }
 
-  removeHabit(habitId: number, habitName: string): void {
+  removeHabit(event: { habitId: number; habitName: string }): void {
     if (!this.challenge) return;
 
-    // Store the habit info for later removal
-    this.pendingHabitRemoval = { habitId, habitName };
+    this.pendingHabitRemoval = event;
 
-    // Show confirmation dialog
     this.confirmationDialogData = {
       title: 'Remove Habit',
-      message: `Are you sure you want to remove "${habitName}" from this challenge? This action cannot be undone.`,
+      message: `Are you sure you want to remove "${event.habitName}" from this challenge? This action cannot be undone.`,
       confirmText: 'Remove',
       cancelText: 'Cancel',
       confirmButtonClass: 'btn-danger',
@@ -707,7 +562,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Reload the challenge to get updated data
           this.loadChallenge();
         },
         error: (error) => {
@@ -731,37 +585,29 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     this.pendingHabitRemoval = null;
   }
 
-  getCurrentHabitsCount(): number {
-    return this.challenge?.habitsInfo?.length || 0;
-  }
-
   getCompletionProgress(): { completed: number; total: number; percentage: number } {
     if (!this.challenge) return { completed: 0, total: 0, percentage: 0 };
 
     const totalDays = this.challenge.durationDays;
-    
-    // Calculate days elapsed since challenge started (including current day)
     const startDate = new Date(this.challenge.startDate);
     const currentDate = new Date();
 
-    if(startDate > currentDate) {
+    if (startDate > currentDate) {
       return { completed: 0, total: totalDays, percentage: 0 };
     }
 
-    currentDate.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
-    
+    currentDate.setHours(0, 0, 0, 0);
     const endDate = new Date(this.challenge.endDate);
     const actualEndDate = currentDate > endDate ? endDate : currentDate;
     
     const timeDiff = actualEndDate.getTime() - startDate.getTime();
-    const daysElapsed = Math.max(1, 1 + Math.ceil(timeDiff / (1000 * 60 * 60 * 24))); // At least 1 day
-    
+    const daysElapsed = Math.max(1, 1 + Math.ceil(timeDiff / (1000 * 60 * 60 * 24)));
     const percentage = totalDays > 0 ? Math.round((daysElapsed / totalDays) * 100) : 0;
 
     return {
       completed: daysElapsed,
       total: totalDays,
-      percentage: percentage
+      percentage
     };
   }
 
@@ -791,16 +637,13 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     const formValue = this.challengeUpdateForm.value;
     const challengeId = this.challenge.challengeId;
 
-    // First, update the challenge details
     this.challengeService.updateChallenge(challengeId, formValue)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          // If there are selected habits to add, add them after updating the challenge
+        next: () => {
           if (this.selectedHabitIds.length > 0) {
             this.addSelectedHabitsToChallenge(challengeId);
           } else {
-            // No habits to add, just reload and close
             this.loadChallenge();
             this.closeHabitSelectionDialog();
             this.isUpdatingChallenge = false;
@@ -815,7 +658,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
   }
 
   private addSelectedHabitsToChallenge(challengeId: number): void {
-    // Add habits one by one using RxJS operators
     const addHabitObservables = this.selectedHabitIds.map(habitId => {
       const habit = this.availableHabits.find(h => h.habitId === habitId);
       const habitName = habit?.name || 'Unknown Habit';
@@ -823,12 +665,10 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
       return this.challengeService.addHabit(challengeId, habitId, habitName, challengeName);
     });
 
-    // Use forkJoin to wait for all habit additions to complete
     forkJoin(addHabitObservables)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // All habits added successfully, reload challenge and close dialog
           this.loadChallenge();
           this.closeHabitSelectionDialog();
           this.isUpdatingChallenge = false;
@@ -836,7 +676,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error adding habits to challenge:', error);
           this.error = 'Failed to add some habits to challenge';
-          // Still reload the challenge to show any successful updates
           this.loadChallenge();
           this.closeHabitSelectionDialog();
           this.isUpdatingChallenge = false;
@@ -851,13 +690,11 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     const progress = this.getCompletionProgress();
     const daysRemaining = progress.total - progress.completed;
     
-    // Construct habit strings
     const habitStrings = this.challenge.habitsInfo.map(habit => {
       const performedCount = habit.habitEntries.filter(e => e.performed).length;
       return `Habit name: ${habit.habitName}, Number of times habit was done: ${performedCount}`;
     });
 
-    // Construct notes string
     const notesStrings: string[] = [];
     this.notes.forEach((note, date) => {
       if (note.hasNote) {
@@ -882,7 +719,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Analysis failed:', error);
-          // Error is already handled by service snackbar
         }
       });
   }
@@ -891,9 +727,6 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     this.showAnalysisDialog = false;
     this.analysisResult = '';
   }
-
-  isEditingRetrospective = false;
-  retrospectiveText = '';
 
   startEditingRetrospective(): void {
     if (this.challenge) {
@@ -913,7 +746,7 @@ export class ChallengeDetailPageComponent implements OnInit, OnDestroy {
     this.challengeService.update(this.challenge.challengeId, { retrospective: this.retrospectiveText })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: () => {
           if (this.challenge) {
             this.challenge.retrospective = this.retrospectiveText;
           }
