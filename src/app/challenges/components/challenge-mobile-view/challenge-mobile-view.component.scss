@@ -162,13 +162,13 @@
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-/* Mobile Journal Notes (Notebook Accent Card) */
+/* Mobile Journal Notes (Collapsible Notebook Accent Card) */
 .mobile-notes-section {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-left: 4px solid #60a5fa;
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
@@ -179,12 +179,11 @@
     background: linear-gradient(135deg, rgba(51, 65, 85, 0.8), rgba(30, 41, 59, 0.9));
     border-color: rgba(96, 165, 250, 0.4);
     border-left-color: #3b82f6;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
   }
 
-  &:active {
-    transform: scale(0.99);
+  &.expanded {
+    border-color: rgba(96, 165, 250, 0.4);
+    padding-bottom: 14px;
   }
 }
 
@@ -192,7 +191,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  width: 100%;
 }
 
 .journal-title-tag {
@@ -213,22 +212,77 @@
   }
 }
 
+.has-note-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  display: inline-block;
+}
+
+.notes-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .notes-edit-hint {
-  font-size: 11px;
-  color: #60a5fa;
-  font-weight: 600;
   background: rgba(96, 165, 250, 0.12);
   border: 1px solid rgba(96, 165, 250, 0.25);
-  padding: 3px 8px;
+  color: #60a5fa;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
   border-radius: 10px;
+  cursor: pointer;
   transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(96, 165, 250, 0.25);
+    color: #ffffff;
+    border-color: #60a5fa;
+  }
+}
+
+.notes-expand-btn {
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  font-size: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #ffffff;
+    background: rgba(148, 163, 184, 0.25);
+  }
 }
 
 .mobile-notes-body {
+  margin-top: 10px;
   background: rgba(15, 23, 42, 0.4);
   border-radius: 8px;
   padding: 10px 12px;
   border: 1px dashed rgba(148, 163, 184, 0.15);
+  animation: bodyFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes bodyFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mobile-notes-content {

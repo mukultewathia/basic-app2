@@ -44,18 +44,35 @@
       <span class="future-badge" *ngIf="selectedMobileDate.isFuture">Future Date (Read-Only)</span>
     </div>
 
-    <!-- Day Journal / Reflection Notes Card (Notebook Style) -->
-    <div class="mobile-notes-section" (click)="notesClick.emit(selectedMobileDate.date)">
-      <div class="mobile-notes-header">
+    <!-- Day Journal / Reflection Notes Card (Collapsed by Default) -->
+    <div class="mobile-notes-section" [class.expanded]="isNotesExpanded">
+      <div class="mobile-notes-header" (click)="toggleNotesExpansion($event)">
         <div class="journal-title-tag">
           <span class="journal-icon">📝</span>
           <h4>Day Journal & Notes</h4>
+          <span class="has-note-dot" *ngIf="notesText" title="Notes logged for this day"></span>
         </div>
-        <span class="notes-edit-hint">✏️ Tap to edit</span>
+        <div class="notes-header-actions">
+          <button 
+            type="button" 
+            class="notes-edit-hint" 
+            (click)="onNotesEditClick($event)"
+            title="Edit Notes">
+            ✏️ Tap to edit
+          </button>
+          <button 
+            type="button" 
+            class="notes-expand-btn" 
+            (click)="toggleNotesExpansion($event)"
+            [attr.aria-label]="isNotesExpanded ? 'Collapse notes' : 'Expand notes'">
+            {{ isNotesExpanded ? '▲' : '▼' }}
+          </button>
+        </div>
       </div>
-      <div class="mobile-notes-body">
+
+      <div class="mobile-notes-body" *ngIf="isNotesExpanded">
         <p class="mobile-notes-content" [class.empty]="!notesText">
-          {{ notesText || 'No reflection logged for this date. Tap to record thoughts, mood, or daily context...' }}
+          {{ notesText || 'No reflection logged for this date. Tap to edit or record thoughts...' }}
         </p>
       </div>
     </div>

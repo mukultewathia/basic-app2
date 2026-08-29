@@ -23,12 +23,15 @@ export class ChallengeMobileViewComponent implements AfterViewInit, OnChanges {
   @Output() toggleHabit = new EventEmitter<{ habitId: number; performed: boolean }>();
   @Output() notesClick = new EventEmitter<string>();
 
+  isNotesExpanded = false;
+
   ngAfterViewInit(): void {
     this.scrollToActiveDate();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selectedMobileDate'] || changes['dates']) {
+      this.isNotesExpanded = false;
       setTimeout(() => this.scrollToActiveDate(), 50);
     }
   }
@@ -37,6 +40,18 @@ export class ChallengeMobileViewComponent implements AfterViewInit, OnChanges {
     const activeEl = document.querySelector('.mobile-date-card.active');
     if (activeEl) {
       activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+
+  toggleNotesExpansion(event: Event): void {
+    event.stopPropagation();
+    this.isNotesExpanded = !this.isNotesExpanded;
+  }
+
+  onNotesEditClick(event: Event): void {
+    event.stopPropagation();
+    if (this.selectedMobileDate) {
+      this.notesClick.emit(this.selectedMobileDate.date);
     }
   }
 
